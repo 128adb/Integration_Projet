@@ -13,7 +13,11 @@ def start_net_serv(ip=LOCAL_IP, port=PORT_SERV_CLES):
     :param port: le port à utilier
     :return: le socket créé en mode "serveur"
     """
-
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #Serveur socket AF_INET = ipv4, sock_stream = TCP
+    #donc le serveur est en TCP et en ipV4
+    server_socket.bind((ip, port)) #Le serveur est bind sur comme ip la MIENNE et le port source
+    print(f"Serveur en écoute sur {ip}:{port}")
+    return server_socket
 
 def connect_to_serv(ip=LOCAL_IP, port=PORT_SERV_CLES, retry=60):
     """
