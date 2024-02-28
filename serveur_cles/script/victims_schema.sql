@@ -1,3 +1,4 @@
+#creation_table
 CREATE TABLE victims (
     id_victim INTEGER,
     os VARCHAR,
