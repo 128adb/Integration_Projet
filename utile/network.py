@@ -81,4 +81,4 @@ client_socket = connect_to_serv()
 # Envoi d'un message
 send_message(client_socket, b'Salut')
 received_message = receive_message(server_socket)
-print("Message reçu par le serveur:", received_message.decode('utf-8'))
+print("Message reçu par le serveur:", received_message.decode('utf-8')) #ok
