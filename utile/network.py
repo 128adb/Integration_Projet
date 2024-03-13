@@ -36,12 +36,11 @@ def connect_to_serv(ip=LOCAL_IP, port=PORT_SERV_CLES, retry=60):
     connected = False
     while not connected:
         try:
-            client_socket.connect(ip, port)
+            client_socket.connect((ip, port))  # Utilisation de (ip, port) au lieu de ip, port
             connected = True
-        except Exception:
-            print("Echec de la connexion ")
-            time.sleep(retry)
-    print('GG vous êtes connecté ! ')
+        except Exception as e:  # Gestion générale des autres erreurs
+            print(f"Erreur lors de la connexion: {e}")
+    print('vous êtes connecté ! ')
     return client_socket
 
 
@@ -73,5 +72,13 @@ def receive_message(s):
         full_msg += msg_fragmente  # le full message va etre rempli petit a petit avec des fragments
     return full_msg
 
-start_net_serv()
-connect_to_serv()
+
+server_socket = start_net_serv()
+
+# Connexion au serveur
+client_socket = connect_to_serv()
+
+# Envoi d'un message
+send_message(client_socket, b'Salut')
+received_message = receive_message(server_socket)
+print("Message reçu par le serveur:", received_message.decode('utf-8'))
