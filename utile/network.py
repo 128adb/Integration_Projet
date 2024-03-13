@@ -40,7 +40,7 @@ def connect_to_serv(ip=LOCAL_IP, port=PORT_SERV_CLES, retry=60):
             connected = True
         except Exception as e:  # Gestion générale des autres erreurs
             print(f"Erreur lors de la connexion: {e}")
-    print('vous êtes connecté ! ')
+    print(f'vous êtes connecté sur {ip} : {port} ')
     return client_socket
 
 
@@ -73,12 +73,3 @@ def receive_message(s):
     return full_msg
 
 
-server_socket = start_net_serv()
-
-# Connexion au serveur
-client_socket = connect_to_serv()
-
-# Envoi d'un message
-send_message(client_socket, b'Salut')
-received_message = receive_message(server_socket)
-print("Message reçu par le serveur:", received_message.decode('utf-8')) #ok

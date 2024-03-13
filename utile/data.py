@@ -1,7 +1,7 @@
 import sqlite3
 
 # Constantes
-DB_FILENAME = 'data/victims_schema.sql'
+DB_FILENAME = 'data/victims.sqlite'
 
 
 def connect_db():
@@ -9,11 +9,8 @@ def connect_db():
     Initialise la connexion vers la base de donnée
     :return: La connexion établie avec la base de donnée
     """
-    try:
-        connexion = sqlite3.connect(DB_FILENAME)
-        return connexion
-    except sqlite3.Error:
-        print("Erreur de connexion à la base de donnée")
+    connexion = sqlite3.connect(DB_FILENAME)
+    return connexion
 def insert_data(conn, table, items, data):
     """
     Insère des données de type 'items' avec les valeurs 'data' dans la 'table' en utilisant la connexion 'conn' existante
@@ -50,3 +47,5 @@ def get_list_history(conn, id_victim):
     :param id_victim: l'identifiant de la victime
     :return: la liste de son historique
     """
+
+connect_db()

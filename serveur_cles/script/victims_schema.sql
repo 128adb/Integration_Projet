@@ -1,6 +1,5 @@
-#creation_table
 CREATE TABLE victims (
-    id_victim INTEGER,
+    id_victim INTEGER NOT NULL,
     os VARCHAR,
     hash VARCHAR PRIMARY KEY,
     disks VARCHAR,
