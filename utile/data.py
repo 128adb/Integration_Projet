@@ -1,7 +1,7 @@
 import sqlite3
 
 # Constantes
-DB_FILENAME = 'data/victims.sqlite'
+DB_FILENAME = 'data/victims_schema.sql'
 
 
 def connect_db():
@@ -9,7 +9,11 @@ def connect_db():
     Initialise la connexion vers la base de donnée
     :return: La connexion établie avec la base de donnée
     """
-
+    try:
+        connexion = sqlite3.connect(DB_FILENAME)
+        return connexion
+    except sqlite3.Error:
+        print("Erreur de connexion à la base de donnée")
 def insert_data(conn, table, items, data):
     """
     Insère des données de type 'items' avec les valeurs 'data' dans la 'table' en utilisant la connexion 'conn' existante
@@ -19,6 +23,7 @@ def insert_data(conn, table, items, data):
     :param data: la valeur des champs à insérer
     :return: Néant
     """
+    insert = "INSERT INTO " + str(table) + " " + str(items) + " VALUES " + str(data)
 
 
 def select_data(conn, select_query):

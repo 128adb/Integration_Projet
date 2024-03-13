@@ -18,7 +18,7 @@ def start_net_serv(ip=LOCAL_IP, port=PORT_SERV_CLES):
                                   socket.SOCK_STREAM)  # Serveur socket AF_INET = ipv4, sock_stream = TCP
     # donc le serveur est en TCP et en ipV4
     server_socket.bind((ip, port))  # Le serveur est bind sur comme ip la MIENNE et le port source
-    server_socket.listen(0)
+    server_socket.listen(5)
     print(f"Serveur en écoute sur {ip}:{port}")
     return server_socket
 
@@ -52,8 +52,10 @@ def send_message(s, msg=b''):
     :param msg: (dictionary) message à envoyer
     :return: Néant
     """
-    message = str.encode(msg)
+    message = bytes(f"{len(msg):<{HEADERSIZE}}", 'utf-8') + msg
     s.send(message)
+    # On va mettre en bytes (octets) le message donc on va faire la len(mot) qui est en bytes donc la on aura la len
+    # cette len on va la mettre dans l'entete donc <{HEADERSIZE} + on va ajouter a la fin le message
 
 
 def receive_message(s):
@@ -62,3 +64,14 @@ def receive_message(s):
     :param s: (socket) pour réceptionner le message
     :return: (objet) réceptionné
     """
+    msg_header = s.recv(HEADERSIZE)  # Reception de l'entete
+    msg_len = int(msg_header.decode('utf-8').strip())
+
+    full_msg = b''
+    while len(full_msg) < msg_len:
+        msg_fragmente = s.recv(16)
+        full_msg += msg_fragmente  # le full message va etre rempli petit a petit avec des fragments
+    return full_msg
+
+start_net_serv()
+connect_to_serv()
