@@ -21,7 +21,7 @@ def main():
                 break
 
             # Afficher le message reçu
-            print(f"Message du client : {message.decode('utf-8')}")
+            print(f"Message du client : {message}")
         # Fermer la connexion avec le client
         client_socket.close()
 

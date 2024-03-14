@@ -1,6 +1,6 @@
 import socket
 import time
-
+import pickle
 # Constantes
 HEADERSIZE = 10
 LOCAL_IP = socket.gethostname()
@@ -63,13 +63,19 @@ def receive_message(s):
     :param s: (socket) pour réceptionner le message
     :return: (objet) réceptionné
     """
-    msg_header = s.recv(HEADERSIZE)  # Reception de l'entete
-    msg_len = int(msg_header.decode('utf-8').strip())
-
-    full_msg = b''
-    while len(full_msg) < msg_len:
-        msg_fragmente = s.recv(16)
-        full_msg += msg_fragmente  # le full message va etre rempli petit a petit avec des fragments
-    return full_msg
+    message = s.recv(HEADERSIZE)
+    if not message:
+        s.close()
+        return None
+    message_len = int(message[:HEADERSIZE])
+    full_message = b''
+    while len(full_message) < message_len:
+        msg = s.recv(message_len - len(full_message))
+        if not msg:
+            s.close()
+            return None
+        full_message += msg
+    full_message = full_message.decode('utf-8')
+    return full_message
 
 
