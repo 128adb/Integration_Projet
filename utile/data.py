@@ -48,7 +48,13 @@ def get_list_victims(conn):
     :param conn: la connexion déjà établie à la base de donnée
     :return: La liste des victimes
     """
-    select = "SELECT * FROM LIST_VICTIM_RESP"
+    select =  '''
+    SELECT victims.id_victim, victims.hash, victims.os, victims.disks, last_states.last_state  
+    FROM (SELECT id_victim, MAX(datetime), state AS last_state
+    FROM states
+    GROUP BY id_victim) AS last_states
+    INNER JOIN victims ON victims.id_victim = last_states.id_victim
+    '''
     list_victim = select_data(conn, select)
     return list_victim
 

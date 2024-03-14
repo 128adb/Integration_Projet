@@ -61,8 +61,13 @@ def simulate_hash(longueur=0):
     return ''.join(random.choice(letters) for i in range(longueur))
 
 
+conn = data.connect_db()
 def main():
     # Ajoute de fausses données dans la DB pour les tests
+    for victim in fake_victims:
+        victime = (victim[0], simulate_hash(256), victim[1], simulate_key(512))
+        data.insert_data(conn, 'victims', '(os, hash, disks, key)', f'{victime}')
+        exit(0)
     exit(0)
 
 if __name__ == '__main__':
