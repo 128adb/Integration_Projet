@@ -1,29 +1,28 @@
 CREATE TABLE victims (
-    id_victim INTEGER NOT NULL,
-    os VARCHAR,
-    hash VARCHAR PRIMARY KEY,
-    disks VARCHAR,
-    key VARCHAR
+    os VARCHAR NOT NULL,
+    hash VARCHAR PRIMARY KEY NOT NULL,
+    disks VARCHAR NOT NULL,
+    key VARCHAR NOT NULL
 );
 
 CREATE TABLE decrypted (
-    id_decrypted INTEGER PRIMARY KEY,
-    id_victim INTEGER,
-    datetime TIMESTAMP,
-    nb_files INTEGER,
-    FOREIGN KEY (id_victim) REFERENCES victims (id_victim)
+    id_decrypted INTEGER PRIMARY KEY NOT NULL,
+    hash INTEGER NOT NULL,
+    datetime TIMESTAMP NOT NULL,
+    nb_files INTEGER NOT NULL,
+    FOREIGN KEY (hash) REFERENCES victims (hash)
 );
 CREATE TABLE states (
-    id_state INTEGER PRIMARY KEY,
-    id_victim INTEGER,
-    datetime TIMESTAMP,
-    state VARCHAR,
-    FOREIGN KEY (id_victim) REFERENCES victims (id_victim)
+    id_state INTEGER PRIMARY KEY NOT NULL,
+    hash INTEGER NOT NULL,
+    datetime TIMESTAMP NOT NULL,
+    state VARCHAR NOT NULL,
+    FOREIGN KEY (hash) REFERENCES victims (hash)
 );
 CREATE TABLE encrypted (
-    id_encrypted INTEGER PRIMARY KEY,
-    id_victim INTEGER,
-    datetime TIMESTAMP,
-    nb_files INTEGER,
-    FOREIGN KEY (id_victim) REFERENCES victims (id_victim)
+    id_encrypted INTEGER PRIMARY KEY NOT NULL,
+    hash INTEGER NOT NULL,
+    datetime TIMESTAMP NOT NULL,
+    nb_files INTEGER NOT NULL,
+    FOREIGN KEY (hash) REFERENCES victims (hash)
 );
