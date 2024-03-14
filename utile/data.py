@@ -1,7 +1,7 @@
 import sqlite3
 
 # Constantes
-DB_FILENAME = 'data/victims.sqlite'
+DB_FILENAME = '../serveur_cles/data/victims.sqlite'
 
 
 def connect_db():
@@ -10,6 +10,8 @@ def connect_db():
     :return: La connexion établie avec la base de donnée
     """
     connexion = sqlite3.connect(DB_FILENAME)
+    if connexion:
+        print('Connexion établie')
     return connexion
 def insert_data(conn, table, items, data):
     """
@@ -20,8 +22,11 @@ def insert_data(conn, table, items, data):
     :param data: la valeur des champs à insérer
     :return: Néant
     """
-    insert = "INSERT INTO " + str(table) + " " + str(items) + " VALUES " + str(data)
-
+    insert = "INSERT INTO " + table + " " + items + " VALUES " + data
+    cursor = conn.cursor()
+    cursor.execute(insert)
+    conn.commit()
+    cursor.close()
 
 def select_data(conn, select_query):
     """
@@ -30,6 +35,11 @@ def select_data(conn, select_query):
     :param select_query: la requête du select à effectuer
     :return: les records correspondants au résultats du SELECT
     """
+    cursor = conn.cursor()
+    cursor.execute(select_query)
+    records = cursor.fetchall()
+    cursor.close()
+    return records
 
 def get_list_victims(conn):
     """
@@ -38,7 +48,9 @@ def get_list_victims(conn):
     :param conn: la connexion déjà établie à la base de donnée
     :return: La liste des victimes
     """
-
+    select = "SELECT * FROM LIST_VICTIM_RESP"
+    list_victim = select_data(conn, select)
+    return list_victim
 
 def get_list_history(conn, id_victim):
     """
@@ -47,5 +59,8 @@ def get_list_history(conn, id_victim):
     :param id_victim: l'identifiant de la victime
     :return: la liste de son historique
     """
+    select = f' SELECT id_victim, datetime, state FROM states WHERE HASH = {id_victim}'
+    list_history = select_data(conn,select)
+    return list_history
 
 connect_db()
