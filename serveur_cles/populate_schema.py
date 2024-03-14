@@ -67,7 +67,12 @@ def main():
     for victim in fake_victims:
         victime = (victim[0], simulate_hash(256), victim[1], simulate_key(512))
         data.insert_data(conn, 'victims', '(os, hash, disks, key)', f'{victime}')
-        exit(0)
+    id_victim = 0
+    for histories in fake_histories.values():
+        id_victim += 1
+        for history in histories:
+            data_state = (id_victim, history[0])
+            data.insert_data(conn, 'states', '(id_victim, datetime, state)', f'{data_state}')
     exit(0)
 
 if __name__ == '__main__':
