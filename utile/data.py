@@ -48,23 +48,18 @@ def get_list_victims(conn):
     :param conn: la connexion déjà établie à la base de donnée
     :return: La liste des victimes
     """
-    select =  '''
-    SELECT victims.hash, victims.os, victims.disks, last_states.last_state  
-    FROM (SELECT hash, MAX(datetime), state AS last_state
-    FROM states
-    GROUP BY hash) AS last_states
-    INNER JOIN victims ON victims.hash = last_states.hash
-    '''
+    select = f'SELECT * FROM victims '
+
     list_victim = select_data(conn, select)
     return list_victim
 
-def get_list_history(conn, id_victim):
+def get_list_history(conn, hash):
     """
     Retourne l'historique correspondant à la victime 'id_victim'
     :param conn: la connexion déjà établie à la base de donnée
     :param id_victim: l'identifiant de la victime
     :return: la liste de son historique
     """
-    select = f' SELECT id_victim, datetime, state FROM states WHERE HASH = {id_victim}'
+    select = f' SELECT hash, datetime, state FROM states WHERE HASH = {hash}'
     list_history = select_data(conn,select)
     return list_history
