@@ -11,7 +11,7 @@ def connect_db():
     """
     connexion = sqlite3.connect(DB_FILENAME)
     if connexion:
-        print('Connexion établie')
+        print('Connexion avec la DB effectué')
     return connexion
 def insert_data(conn, table, items, data):
     """
@@ -49,11 +49,11 @@ def get_list_victims(conn):
     :return: La liste des victimes
     """
     select =  '''
-    SELECT victims.id_victim, victims.hash, victims.os, victims.disks, last_states.last_state  
-    FROM (SELECT id_victim, MAX(datetime), state AS last_state
+    SELECT victims.hash, victims.os, victims.disks, last_states.last_state  
+    FROM (SELECT hash, MAX(datetime), state AS last_state
     FROM states
-    GROUP BY id_victim) AS last_states
-    INNER JOIN victims ON victims.id_victim = last_states.id_victim
+    GROUP BY hash) AS last_states
+    INNER JOIN victims ON victims.hash = last_states.hash
     '''
     list_victim = select_data(conn, select)
     return list_victim
@@ -68,5 +68,3 @@ def get_list_history(conn, id_victim):
     select = f' SELECT id_victim, datetime, state FROM states WHERE HASH = {id_victim}'
     list_history = select_data(conn,select)
     return list_history
-
-connect_db()

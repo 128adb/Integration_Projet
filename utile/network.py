@@ -51,8 +51,9 @@ def send_message(s, msg=b''):
     :param msg: (dictionary) message à envoyer
     :return: Néant
     """
-    message = bytes(f"{len(msg):<{HEADERSIZE}}", 'utf-8') + msg
-    s.send(message)
+    msg = pickle.dumps(msg)
+    msg = bytes(f"{len(msg):<{HEADERSIZE}}", 'utf-8') + msg
+    s.send(msg)
     # On va mettre en bytes (octets) le message donc on va faire la len(mot) qui est en bytes donc la on aura la len
     # cette len on va la mettre dans l'entete donc <{HEADERSIZE} + on va ajouter a la fin le message
 
@@ -63,19 +64,12 @@ def receive_message(s):
     :param s: (socket) pour réceptionner le message
     :return: (objet) réceptionné
     """
-    message = s.recv(HEADERSIZE)
-    if not message:
-        s.close()
+    msg = s.recv(HEADERSIZE)
+    if not msg:
         return None
-    message_len = int(message[:HEADERSIZE])
-    full_message = b''
-    while len(full_message) < message_len:
-        msg = s.recv(message_len - len(full_message))
-        if not msg:
-            s.close()
-            return None
-        full_message += msg
-    full_message = full_message.decode('utf-8')
-    return full_message
+    msg_len = int(msg[:HEADERSIZE])
+    full_msg = pickle.loads(s.recv(msg_len))
+    full_msg = full_msg.decode('utf-8')
+    return full_msg
 
 
