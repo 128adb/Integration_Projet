@@ -13,13 +13,16 @@ def main():
     client_socket = network.connect_to_serv()
     print("Connexion établie avec le serveur.")
     while True:
-
         message = input("Entrez votre message : ")
 
         # Envoyer le message au serveur
         network.send_message(client_socket, message.encode('utf-8'))
 
-        # Fermer la connexion avec le serveur
+        # Recevoir le message de confirmation du serveur
+        confirmation_message = network.receive_message(client_socket)
+        print("Confirmation du serveur :", confirmation_message.decode('utf-8'))
+
+    # Fermer la connexion avec le serveur
     client_socket.close()
     print("Connexion fermée.")
 

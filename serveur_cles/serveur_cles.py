@@ -50,6 +50,10 @@ def main():
                 network.send_message(client_socket, msg)
             else:
                 print('Failed ! ')
+            # Après avoir traité le message du client, envoyer un message de confirmation à la console de contrôle
+            confirmation_message = "Message reçu par le serveur."
+            network.send_message(client_socket, confirmation_message.encode('utf-8'))
+
         # Fermer la connexion avec le client
         client_socket.close()
     # Fermer le socket du serveur une fois que la boucle est terminée

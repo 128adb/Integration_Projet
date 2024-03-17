@@ -51,7 +51,7 @@ def get_list_victims(conn):
     select = f'SELECT * FROM victims '
 
     list_victim = select_data(conn, select)
-    return list_victim
+    return list_victim  
 
 def get_list_history(conn, hash):
     """

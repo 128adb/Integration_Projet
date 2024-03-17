@@ -69,7 +69,6 @@ def receive_message(s):
         return None
     msg_len = int(msg[:HEADERSIZE])
     full_msg = pickle.loads(s.recv(msg_len))
-    full_msg = full_msg.decode('utf-8')
     return full_msg
 
 
