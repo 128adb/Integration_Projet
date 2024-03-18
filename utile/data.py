@@ -13,6 +13,8 @@ def connect_db():
     if connexion:
         print('Connexion avec la DB effectué')
     return connexion
+
+
 def insert_data(conn, table, items, data):
     """
     Insère des données de type 'items' avec les valeurs 'data' dans la 'table' en utilisant la connexion 'conn' existante
@@ -28,6 +30,7 @@ def insert_data(conn, table, items, data):
     conn.commit()
     cursor.close()
 
+
 def select_data(conn, select_query):
     """
     Exécute un SELECT dans la base de donnée (conn) et retourne les records correspondants
@@ -41,6 +44,7 @@ def select_data(conn, select_query):
     cursor.close()
     return records
 
+
 def get_list_victims(conn):
     """
     Retourne la liste des victimes présente dans la base de donnée
@@ -51,15 +55,16 @@ def get_list_victims(conn):
     select = f'SELECT * FROM victims '
 
     list_victim = select_data(conn, select)
-    return list_victim  
+    return list_victim
 
-def get_list_history(conn, hash):
+
+def get_list_history(conn):
     """
     Retourne l'historique correspondant à la victime 'id_victim'
     :param conn: la connexion déjà établie à la base de donnée
     :param id_victim: l'identifiant de la victime
     :return: la liste de son historique
     """
-    select = f' SELECT hash, datetime, state FROM states WHERE HASH = {hash}'
-    list_history = select_data(conn,select)
+    select = f' SELECT * from states'
+    list_history = select_data(conn, select)
     return list_history

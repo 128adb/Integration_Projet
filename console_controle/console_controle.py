@@ -2,12 +2,9 @@ from datetime import datetime
 import utile.network as network
 import utile.message as message
 
-
 # Constantes
 IP_SERV_CONSOLE = ''
 PORT_SERV_CONSOLE = 0
-
-
 
 def main():
     client_socket = network.connect_to_serv()
@@ -16,11 +13,11 @@ def main():
         message = input("Entrez votre message : ")
 
         # Envoyer le message au serveur
-        network.send_message(client_socket, message.encode('utf-8'))
+        network.send_message(client_socket, message)
 
         # Recevoir le message de confirmation du serveur
         confirmation_message = network.receive_message(client_socket)
-        print("Confirmation du serveur :", confirmation_message.decode('utf-8'))
+        print(confirmation_message)
 
     # Fermer la connexion avec le serveur
     client_socket.close()
