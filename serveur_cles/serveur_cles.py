@@ -4,6 +4,7 @@ import utile.data as data
 from utile import message
 import socket
 
+
 def main():
     connexion_db = data.connect_db()
     server_socket = network.start_net_serv()
@@ -23,8 +24,9 @@ def main():
 
             # Afficher le message reçu
             print(f"Message du client : {message}")
+
             if message == 'LIST_VICTIM_REQ':
-                print('message reçu')
+                print('Message reçu : LIST_VICTIM_REQ')
                 victims = data.get_list_victims(connexion_db)
                 print(victims)
 
@@ -50,6 +52,7 @@ def main():
                 network.send_message(client_socket, msg)
             else:
                 print('Failed ! ')
+
             # Après avoir traité le message du client, envoyer un message de confirmation à la console de contrôle
             confirmation_message = "Message reçu par le serveur."
             network.send_message(client_socket, confirmation_message.encode('utf-8'))
@@ -59,6 +62,7 @@ def main():
     # Fermer le socket du serveur une fois que la boucle est terminée
     server_socket.close()
     exit(0)
+
 
 if __name__ == '__main__':
     main()
