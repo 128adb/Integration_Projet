@@ -17,7 +17,7 @@ def main():
 
         # Recevoir le message de confirmation du serveur
         confirmation_message = network.receive_message(client_socket)
-        print(confirmation_message)
+        print("Confirmation du serveur :", confirmation_message)
 
     # Fermer la connexion avec le serveur
     client_socket.close()
