@@ -1,6 +1,7 @@
 CREATE TABLE victims (
+    id_victim VARCHAR PRIMARY KEY NOT NULL,
     os VARCHAR NOT NULL,
-    hash VARCHAR PRIMARY KEY NOT NULL,
+    hash VARCHAR NOT NULL,
     disks VARCHAR NOT NULL,
     key VARCHAR NOT NULL
 );
