@@ -72,7 +72,7 @@ def main():
         id_victim += 1
         for history in histories:
             data_state = (id_victim, history[0])
-            data.insert_data(conn, 'states', '(hash, state)', f'{data_state}')
+            data.insert_data(conn, 'states', '(id_victim, state)', f'{data_state}')
     exit(0)
 
 if __name__ == '__main__':

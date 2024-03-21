@@ -19,6 +19,7 @@ def main():
         while True:
             # Recevoir le message du client
             message = network.receive_message(client_socket)
+            msg_type = utile.message.set_message(message)
             if not message:
                 break
 
@@ -40,7 +41,7 @@ def main():
                 network.send_message(client_socket, msg)
 
             elif message == 'HISTORY_REQ':
-                id_victim = message['HIST_REQ']
+                id_victim = msg_type['HIST_REQ']
                 histories = data.get_list_history(connexion_db, id_victim)
                 for history in histories:
                     # Envoi des messages history_resp

