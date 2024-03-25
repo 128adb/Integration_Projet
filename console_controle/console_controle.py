@@ -2,11 +2,11 @@ from datetime import datetime
 
 import utile.message
 import utile.network as network
-import utile.message as message
 
 # Constantes
 IP_SERV_CONSOLE = ''
 PORT_SERV_CONSOLE = 0
+
 
 def main():
     client_socket = network.connect_to_serv()
@@ -30,7 +30,7 @@ def main():
         confirmation_message = network.receive_message(client_socket)
         msg_type = utile.message.get_message_type(confirmation_message)
         print("Confirmation du serveur :", confirmation_message)
-        print("Type du message : " + msg_type )
+        print("Type du message : " + msg_type)
         texte = "LISTING DES VICTIMES DU RANSOMWARE\n"
         texte += "----------------------------------\n"
         texte += ("num".ljust(5) + "id".ljust(13) + "type".ljust(13) + "disques".ljust(14) + "statut".ljust(11)
@@ -46,7 +46,8 @@ def main():
                 msg_compteur = ''
                 if confirmation_message['NB_FILES'] == 0:
                     msg_compteur = '-'
-                elif confirmation_message['STATE'] == 'PENDING' or confirmation_message['STATE'] == 'PROTECTED' or confirmation_message['STATE'] == 'CRYPT':
+                elif confirmation_message['STATE'] == 'PENDING' or confirmation_message['STATE'] == 'PROTECTED' or \
+                        confirmation_message['STATE'] == 'CRYPT':
                     msg_compteur = (str(confirmation_message['NB_FILES']) + " fichiers chiffrés")
                 elif confirmation_message['STATE'] == 'PROTECTED':
                     msg_compteur = (str(confirmation_message['NB_FILES']) + " fichiers déchiffrés")
@@ -68,11 +69,12 @@ def main():
         print(texte)
         print("id liste : " + str(liste_id))
 
-    # Fermer la connexion avec le serveur
-    client_socket.close()
-    print("Connexion fermée.")
+        # Fermer la connexion avec le serveur
+        client_socket.close()
+        print("Connexion fermée.")
 
     exit(0)
+
 
 if __name__ == '__main__':
     main()
