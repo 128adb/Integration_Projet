@@ -1,54 +1,49 @@
-drop table if exists decrypted;
-drop table if exists encrypted;
-drop table if exists states;
-drop table if exists victims;
-
-create table victims
+CREATE TABLE VICTIMS
 (
-    id_victim integer not null
-        constraint victims_pk
-            primary key autoincrement,
-    os         varchar,
-    hash       varchar not null,
-    disks      varchar,
-    key        varchar not null
+    ID_VICTIM INTEGER NOT NULL
+        CONSTRAINT VICTIMS_PK
+            PRIMARY KEY AUTOINCREMENT,
+    OS         VARCHAR,
+    HASH       VARCHAR NOT NULL,
+    DISKS      VARCHAR,
+    KEY        VARCHAR NOT NULL
 );
 
-create table decrypted
+CREATE TABLE DECRYPTED
 (
-    id_decrypted integer   not null
-        constraint decrypted_pk
-            primary key autoincrement,
-    id_victim   integer   not null
-        constraint decrypted_victims_id_victim_fk
-            references victims
-            on update cascade on delete cascade,
-    datetime     timestamp,
-    nb_files     integer   not null
+    ID_DECRYPTED INTEGER   NOT NULL
+        CONSTRAINT DECRYPTED_PK
+            PRIMARY KEY AUTOINCREMENT,
+    ID_VICTIM   INTEGER   NOT NULL
+        CONSTRAINT DECRYPTED_VICTIMS_ID_VICTIM_FK
+            REFERENCES VICTIMS
+            ON UPDATE CASCADE ON DELETE CASCADE,
+    DATETIME     TIMESTAMP,
+    NB_FILES     INTEGER   NOT NULL
 );
 
-create table encrypted
+CREATE TABLE ENCRYPTED
 (
-    id_encrypted integer   not null
-        constraint encrypted_pk
-            primary key autoincrement,
-    id_victim   integer   not null
-        constraint encrypted_victims_id_victim_fk
-            references victims
-            on update cascade on delete cascade,
-    datetime     timestamp,
-    nb_files     integer   not null
+    ID_ENCRYPTED INTEGER   NOT NULL
+        CONSTRAINT ENCRYPTED_PK
+            PRIMARY KEY AUTOINCREMENT,
+    ID_VICTIM   INTEGER   NOT NULL
+        CONSTRAINT ENCRYPTED_VICTIMS_ID_VICTIM_FK
+            REFERENCES VICTIMS
+            ON UPDATE CASCADE ON DELETE CASCADE,
+    DATETIME     TIMESTAMP,
+    NB_FILES     INTEGER   NOT NULL
 );
 
-create table states
+CREATE TABLE STATES
 (
-    id_state   integer   not null
-        constraint states_pk
-            primary key autoincrement,
-    id_victim integer   not null
-        constraint states_victims_id_victim_fk
-            references victims
-            on update cascade on delete cascade,
-    datetime   timestamp ,
-    state      varchar   not null
+    ID_STATE   INTEGER   NOT NULL
+        CONSTRAINT STATES_PK
+            PRIMARY KEY AUTOINCREMENT,
+    ID_VICTIM INTEGER   NOT NULL
+        CONSTRAINT STATES_VICTIMS_ID_VICTIM_FK
+            REFERENCES VICTIMS
+            ON UPDATE CASCADE ON DELETE CASCADE,
+    DATETIME   TIMESTAMP ,
+    STATE      VARCHAR   NOT NULL
 );

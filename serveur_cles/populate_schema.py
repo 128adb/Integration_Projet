@@ -61,19 +61,24 @@ def simulate_hash(longueur=0):
     return ''.join(random.choice(letters) for i in range(longueur))
 
 
-conn = data.connect_db()
+
 def main():
-    # Ajoute de fausses données dans la DB pour les tests
-    for victim in fake_victims:
-        victime = (victim[0], simulate_hash(256), victim[1], simulate_key(512))
-        data.insert_data(conn, 'victims', '(os, hash, disks, key)', f'{victime}')
-    id_victim = 0
-    for histories in fake_histories.values():
-        id_victim += 1
-        for history in histories:
-            data_state = (id_victim, history[0])
-            data.insert_data(conn, 'states', '(id_victim, state)', f'{data_state}')
-    exit(0)
+    # Connexion à la base de données
+    conn = data.connect_db()
+
+    # Ajout de fausses données de victimes dans la base de données
+    for victim_data in fake_victims:
+        os, disks, state, nb_files = victim_data
+        hash_value = simulate_hash(256)
+        key = simulate_key(512)
+        data.insert_data(conn, 'victims', '(os, hash, disks, key)', f'("{os}", "{hash_value}", "{disks}", "{key}")')
+
+    # Ajout de fausses données d'historique dans la base de données
+    for id_victim, histories in fake_histories.items():
+        for history_data in histories:
+            state, _ = history_data
+            data_state = (id_victim, state)
+            data.insert_data(conn, 'states', '(id_victim, state)', str(data_state))
 
 if __name__ == '__main__':
     main()
