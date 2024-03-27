@@ -3,7 +3,7 @@ import time
 import pickle
 # Constantes
 HEADERSIZE = 10
-LOCAL_IP = socket.gethostname()
+LOCAL_IP = socket.gethostbyname(socket.gethostname())
 PORT_SERV_CLES = 8380
 
 
@@ -21,6 +21,8 @@ def start_net_serv(ip=LOCAL_IP, port=PORT_SERV_CLES):
     server_socket.listen(5)
     print(f"Serveur en écoute sur {ip}:{port}")
     return server_socket
+
+
 
 
 def connect_to_serv(ip=LOCAL_IP, port=PORT_SERV_CLES, retry=60):
@@ -70,3 +72,6 @@ def receive_message(s):
     msg_len = int(msg[:HEADERSIZE])
     full_msg = pickle.loads(s.recv(msg_len))
     return full_msg
+
+print(socket.gethostname())
+print(socket.gethostbyname(socket.gethostname()))
