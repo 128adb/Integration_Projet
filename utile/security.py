@@ -72,18 +72,15 @@ def diffie_hellman_recv_key(s_serveur):
     :param s_serveur: (socket) Connexion TCP du serveur avec qui échanger les clés
     :return: (bytes) Clé de 256 bits calculée
     """
-    # Réception des paramètres (p, g, A) envoyés par le client
-    p, g, A = pickle.loads(s_serveur.recv(4096))
-    # Choix aléatoire de la clé privée du serveur
-    b = randint(2, p - 1)
-    # Calcul de la clé publique du serveur
-    B = pow(g, b, p)
-    # Envoi de la clé publique du serveur au client
-    s_serveur.send(pickle.dumps(B))
-    # Calcul de la clé partagée
-    key = pow(A, b, p)
-    # Conversion de la clé partagée en octets
-    key_bytes = key.to_bytes((key.bit_length() + 7) // 8, byteorder='big')
-    # Hachage de la clé partagée pour assurer une taille fixe
-    return sha256(key_bytes).digest()
+    msg_init = network.receive_message(s_serveur)
+    g = msg_init['g']   # g est un entier aléatoire
+    p = msg_init['p']   # p est un nombre premier sur 256 bits
+    public_key_a = msg_init['A']
+    secret_key_b = randint(11, 20)
 
+    key_calculate_b = (public_key_a ** secret_key_b) % p
+
+    # Envoi de la clé publique de B
+    network.send_message(s_serveur, {'B': (g ** secret_key_b) % p})
+
+    return sha256(str(key_calculate_b).encode()).digest()
