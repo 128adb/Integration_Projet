@@ -15,7 +15,6 @@ DEBUG_MODE = True
 PORT_SERV_CONSOLE = 8380
 PORT_SERV_FRONTAL = 8381
 
-
 def generate_key(longueur=0, caracteres=string.ascii_letters + string.digits):
     return ''.join(random.choice(caracteres) for i in range(longueur))
 
@@ -122,6 +121,7 @@ def thread_console(q_request, q_response_console):
             network.send_message(s_console, aes_key)
             # Recevoir le message du client
             message = network.receive_message(s_console)
+            print(message)
             message = security.aes_decrypt(message, aes_key)
             print("Message décrypté" + str(message))
             msg_type = utile.message.get_message_type(message)

