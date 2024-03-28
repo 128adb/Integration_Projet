@@ -14,11 +14,15 @@ def aes_encrypt(msg, key):
     :param key: (bytes) Clé de chiffrement
     :return: (list) Liste des éléments nécessaires au déchiffrement --> [nonce, header, ciphertext, tag]
     """
-    cipher = AES.new(key, AES.MODE_GCM)
-    ciphertext, tag = cipher.encrypt_and_digest(msg.encode())
-    liste = []
-    liste.append(cipher.nonce, ciphertext, tag)
-    return liste
+    aad = b"Ceci est le head"
+    nonce = get_random_bytes(12)
+
+    cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+    cipher.update(aad)
+    ciphertext, tag = cipher.encrypt_and_digest(pad(pickle.dumps(msg), AES.block_size))
+
+    result = [cipher.nonce, aad, ciphertext, tag]
+    return result
 def aes_decrypt(msg, key):
     """
     Fonction de déchiffrement AES-GCM
@@ -26,16 +30,25 @@ def aes_decrypt(msg, key):
     :param key: (bytes) Clé de chiffrement
     :return: (dict) Message déchiffré sous forme de dictionnaire
     """
-    cipher = AES.new(key, AES.MODE_GCM, nonce=msg[0])
-    plaintext = cipher.decrypt_and_verify(msg[1], msg[2])
-    return plaintext.decode()
+    nonce = 0
+    aad = 1
+    ciphertext = 2
+    tag = 3
+
+    cipher = AES.new(key, AES.MODE_GCM, nonce=msg[nonce])
+    cipher.update(msg[aad])
+    plaintext = pickle.loads(unpad(cipher.decrypt_and_verify(msg[ciphertext], msg[tag]), AES.block_size))
+    return plaintext
 def gen_key(size=256):
     """
     Fonction générant une clé de chiffrement
     :param size: (bits) taille de la clé à générer
     :return: (bytes) nouvelle clé de chiffrement
     """
-    return get_random_bytes(size // 8)
+    octets = {256: 32, 192: 24, 128: 16}
+    if size in octets.keys():
+        size = octets[size]
+    return get_random_bytes(size)
 
 
 def diffie_hellman_send_key(s_client):
