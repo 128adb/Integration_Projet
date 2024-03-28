@@ -63,22 +63,19 @@ def simulate_hash(longueur=0):
 
 
 def main():
-    # Connexion à la base de données
-    conn = data.connect_db()
-
-    # Ajout de fausses données de victimes dans la base de données
+    connexion = data.connect_db()
     for victim_data in fake_victims:
         os, disks, state, nb_files = victim_data
-        hash_value = simulate_hash(256)
+        hash = simulate_hash(256)
         key = simulate_key(512)
-        data.insert_data(conn, 'victims', '(os, hash, disks, key)', f'("{os}", "{hash_value}", "{disks}", "{key}")')
+        data.insert_data(connexion, 'victims', '(os, hash, disks, key)', f'("{os}", "{hash}", "{disks}", "{key}")')
 
     # Ajout de fausses données d'historique dans la base de données
-    for id_victim, histories in fake_histories.items():
-        for history_data in histories:
-            state, _ = history_data
-            data_state = (id_victim, state)
-            data.insert_data(conn, 'states', '(id_victim, state)', str(data_state))
+    for id_victim, historiques in fake_histories.items():
+        for historique in historiques:
+            state, _ = historique
+            donnees = (id_victim, state)
+            data.insert_data(connexion, 'states', '(id_victim, state)', str(donnees))
 
 if __name__ == '__main__':
     main()
