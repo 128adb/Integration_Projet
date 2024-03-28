@@ -113,3 +113,32 @@ def get_list_history(conn,id_victim):
     select = f' SELECT id_state from states WHERE {id_victim} = id_state'
     list_history = select_data(conn, select)
     return list_history
+
+def new_victim(conn, hash_victim, os_victim, disk_victim, key_victim):
+    """
+    Enregistre une nouvelle victime dans la DB
+    :param conn: Connexion à la DB
+    :param hash_victim:
+    :param os_victim:
+    :param disk_victim:
+    :param key_victim:
+    :return: (int) le nouvel id_victim en DB
+    """
+    # Enregistrement de la nouvelle victime
+    data_victim = (os_victim, hash_victim, disk_victim, key_victim)
+    insert_data(conn, 'victims', '(os, hash, disks, key)', f'{data_victim}')
+
+    # Récupère l'ID de la nouvelle victime
+    query = f'''
+    SELECT victims.id_victim
+    from victims
+    where victims.hash = "{hash_victim}"
+    '''
+    id_victim = select_data(conn, query)
+    id_victim = id_victim[0][0]
+
+    # Enregistrement de l'état INITIALIZE
+    data_state = (id_victim, 'INITIALIZE')
+    insert_data(conn, 'states', '(id_victim, state)', f'{data_state}')
+
+    return id_victim

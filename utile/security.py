@@ -53,30 +53,24 @@ def gen_key(size=256):
 
 def diffie_hellman_send_key(s_client):
     """
-    Fonction d'échange de clé via le protocole de Diffie Hellman (côté client).
-
-    :param s_client: (socket) Connexion TCP du client avec qui échanger les clés.
-    :return: (bytes) Clé partagée calculée.
+    Fonction d'échange de clé via le protocole de Diffie Hellman
+    :param s_client: (socket) Connexion TCP du client avec qui échanger les clés
+    :return: (bytes) Clé de 256 bits calculée
     """
+    g = randint(9, 99)  # g est un entier aléatoire
+    p = getPrime(32)    # p est un nombre premier sur 256 bits
+    secret_key_a = randint(1, 10)
+    public_key_a = (g ** secret_key_a) % p
 
-    # Génération d'un nombre premier de 1024 bits
-    p = getPrime(1024)
-    # Définition du générateur g (ici, 2)
-    g = 2  # ou tout autre générateur approprié
-    # Choix aléatoire de la clé privée du client
-    a = randint(2, p - 1)
-    # Calcul de la clé publique du client
-    A = pow(g, a, p)
-    # Envoi des paramètres (p, g, A) au serveur
-    s_client.send(pickle.dumps((p, g, A)))
-    # Réception de la clé publique du serveur
-    B = pickle.loads(s_client.recv(4096))
-    # Calcul de la clé partagée
-    key = pow(B, a, p)
-    # Conversion de la clé partagée en octets
-    key_bytes = key.to_bytes((key.bit_length() + 7) // 8, byteorder='big')
-    # Hachage de la clé partagée pour assurer une taille fixe
-    return sha256(key_bytes).digest()
+    msg_init = {'g': g, 'p': p, 'A': public_key_a}
+    network.send_message(s_client, msg_init)
+
+    msg_resp = network.receive_message(s_client)
+    public_key_b = msg_resp['B']
+
+    key_calculate_a = (public_key_b ** secret_key_a) % p
+
+    return sha256(str(key_calculate_a).encode()).digest()
 
 
 def diffie_hellman_recv_key(s_serveur):
