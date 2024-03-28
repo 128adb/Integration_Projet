@@ -94,6 +94,6 @@ def get_message_type(message):
     :param message: le dictionnaire représentant le message
     :return: une chaine correspondant au nom du message comme définit par le protocole
     """
-    list_key = [i for i in message]
-    key_first = list_key[0]
-    return MESSAGE_TYPE[key_first]
+    list_cle = [i for i in message]
+    cle0 = list_cle[0]
+    return MESSAGE_TYPE[cle0]

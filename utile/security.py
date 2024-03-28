@@ -14,14 +14,13 @@ def aes_encrypt(msg, key):
     :param key: (bytes) Clé de chiffrement
     :return: (list) Liste des éléments nécessaires au déchiffrement --> [nonce, header, ciphertext, tag]
     """
-    aad = b"Ceci est le head"
-    nonce = get_random_bytes(12)
-
-    cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
-    cipher.update(aad)
+    grd = get_random_bytes(12)
+    head = b"header"
+    cipher = AES.new(key, AES.MODE_GCM, nonce=grd)
+    cipher.update(head)
     ciphertext, tag = cipher.encrypt_and_digest(pad(pickle.dumps(msg), AES.block_size))
 
-    result = [cipher.nonce, aad, ciphertext, tag]
+    result = [cipher.nonce, head, ciphertext, tag]
     return result
 def aes_decrypt(msg, key):
     """
@@ -30,13 +29,13 @@ def aes_decrypt(msg, key):
     :param key: (bytes) Clé de chiffrement
     :return: (dict) Message déchiffré sous forme de dictionnaire
     """
-    nonce = 0
-    aad = 1
+    grd = 0
+    head = 1
     ciphertext = 2
     tag = 3
 
-    cipher = AES.new(key, AES.MODE_GCM, nonce=msg[nonce])
-    cipher.update(msg[aad])
+    cipher = AES.new(key, AES.MODE_GCM, nonce=msg[grd])
+    cipher.update(msg[head])
     plaintext = pickle.loads(unpad(cipher.decrypt_and_verify(msg[ciphertext], msg[tag]), AES.block_size))
     return plaintext
 def gen_key(size=256):
@@ -45,9 +44,9 @@ def gen_key(size=256):
     :param size: (bits) taille de la clé à générer
     :return: (bytes) nouvelle clé de chiffrement
     """
-    octets = {256: 32, 192: 24, 128: 16}
-    if size in octets.keys():
-        size = octets[size]
+    oct = {256: 32, 192: 24, 128: 16}
+    if size in oct.keys():
+        size = oct[size]
     return get_random_bytes(size)
 
 
@@ -59,18 +58,18 @@ def diffie_hellman_send_key(s_client):
     """
     g = randint(9, 99)  # g est un entier aléatoire
     p = getPrime(32)    # p est un nombre premier sur 256 bits
-    secret_key_a = randint(1, 10)
-    public_key_a = (g ** secret_key_a) % p
+    cle_pv_a = randint(1, 10)
+    cle_pb_a = (g ** cle_pv_a) % p
 
-    msg_init = {'g': g, 'p': p, 'A': public_key_a}
-    network.send_message(s_client, msg_init)
+    msg_ini = {'g': g, 'p': p, 'A': cle_pb_a}
+    network.send_message(s_client, msg_ini)
 
-    msg_resp = network.receive_message(s_client)
-    public_key_b = msg_resp['B']
+    msg_rep = network.receive_message(s_client)
+    cle_pb_b = msg_rep['B']
 
-    key_calculate_a = (public_key_b ** secret_key_a) % p
+    calcul_cle_a = (cle_pb_b ** cle_pv_a) % p
 
-    return sha256(str(key_calculate_a).encode()).digest()
+    return sha256(str(calcul_cle_a).encode()).digest()
 
 
 def diffie_hellman_recv_key(s_serveur):
@@ -79,15 +78,15 @@ def diffie_hellman_recv_key(s_serveur):
     :param s_serveur: (socket) Connexion TCP du serveur avec qui échanger les clés
     :return: (bytes) Clé de 256 bits calculée
     """
-    msg_init = network.receive_message(s_serveur)
-    g = msg_init['g']   # g est un entier aléatoire
-    p = msg_init['p']   # p est un nombre premier sur 256 bits
-    public_key_a = msg_init['A']
-    secret_key_b = randint(11, 20)
+    msg_ini = network.receive_message(s_serveur)
+    g = msg_ini['g']   # g est un entier aléatoire
+    p = msg_ini['p']   # p est un nombre premier sur 256 bits
+    cle_pb_a = msg_ini['A']
+    cle_pv_b = randint(11, 20)
 
-    key_calculate_b = (public_key_a ** secret_key_b) % p
+    calcul_cle_b = (cle_pb_a ** cle_pv_b) % p
 
     # Envoi de la clé publique de B
-    network.send_message(s_serveur, {'B': (g ** secret_key_b) % p})
+    network.send_message(s_serveur, {'B': (g ** cle_pv_b) % p})
 
-    return sha256(str(key_calculate_b).encode()).digest()
+    return sha256(str(calcul_cle_b).encode()).digest()

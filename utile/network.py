@@ -5,6 +5,7 @@ import pickle
 HEADERSIZE = 10
 LOCAL_IP = socket.gethostbyname(socket.gethostname())
 PORT_SERV_CLES = 8380
+IP = "192.168.145.222"
 
 
 def start_net_serv(ip=LOCAL_IP, port=PORT_SERV_CLES):
@@ -14,13 +15,13 @@ def start_net_serv(ip=LOCAL_IP, port=PORT_SERV_CLES):
     :param port: le port à utilier
     :return: le socket créé en mode "serveur"
     """
-    server_socket = socket.socket(socket.AF_INET,
+    ssocket = socket.socket(socket.AF_INET,
                                   socket.SOCK_STREAM)  # Serveur socket AF_INET = ipv4, sock_stream = TCP
     # donc le serveur est en TCP et en ipV4
-    server_socket.bind((ip, port))  # Le serveur est bind sur comme ip la MIENNE et le port source
-    server_socket.listen(5)
+    ssocket.bind((ip, port))  # Le serveur est bind sur comme ip la MIENNE et le port source
+    ssocket.listen(5)
     print(f"Serveur en écoute sur {ip}:{port}")
-    return server_socket
+    return ssocket
 
 
 
@@ -34,16 +35,16 @@ def connect_to_serv(ip=LOCAL_IP, port=PORT_SERV_CLES):
     :param retry: le nombre de seconde à attendre avant de tenter une nouvelle connexion
     :return: le socket créé en mode "client"
     """
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    connected = False
-    while not connected:
+    csocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    connection = False
+    while not connection:
         try:
-            client_socket.connect((ip, port))  # Utilisation de (ip, port) au lieu de ip, port
-            connected = True
+            csocket.connect((ip, port))  # Utilisation de (ip, port) au lieu de ip, port
+            connection = True
         except Exception as e:  # Gestion générale des autres erreurs
             print(f"Erreur lors de la connexion: {e}")
     print(f'vous êtes connecté sur {ip} : {port} ')
-    return client_socket
+    return csocket
 
 
 def send_message(s, msg=b''):
@@ -69,8 +70,8 @@ def receive_message(s):
     msg = s.recv(HEADERSIZE)
     if not msg:
         return None
-    msg_len = int(msg[:HEADERSIZE])
-    full_msg = pickle.loads(s.recv(msg_len))
+    len_msg = int(msg[:HEADERSIZE])
+    full_msg = pickle.loads(s.recv(len_msg))
     return full_msg
 
 print(socket.gethostname())
