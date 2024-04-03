@@ -67,11 +67,11 @@ def print_victims_listing(client_socket):
                 if msg_type == 'LIST_VICTIM_END':
                     break
 
-            # Affichage du listing des victimes
             print(txt)
             print("id liste : " + str(liste_vict))
 
         if msg_ent == "4":
+            
             break
 
 def main():

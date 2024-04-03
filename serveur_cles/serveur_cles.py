@@ -91,7 +91,6 @@ def thread_console(fifo_db, fifo_rep_console):
 
 def thread_frontal(fifo_db, fifo_rep_front):
     s_serveur = network.start_net_serv(port=PORT_SERV_FRONTAL)
-
     while True:
         socket_front, _ = s_serveur.accept()
         aes_key = security.diffie_hellman_send_key(socket_front)

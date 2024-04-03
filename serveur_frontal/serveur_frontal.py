@@ -10,7 +10,6 @@ import utile.config as config
 aes_key = b''
 IP = "192.168.254.1"
 PORT = 8381
-
 def simulate_hash(longueur=0):
     letters = string.hexdigits
     return ''.join(random.choice(letters) for i in range(longueur))
@@ -31,14 +30,13 @@ def main():
             disques_utilisateur = input("Disques ? (c:,d:,f:) : ")
             os_utilisateur = input("type d'OS ? (SERVEUR ou WORKSTATION) : ")
         if choix_utilisateur == 2:
-            hachage_victime = ''
-            os_utilisateur = ''
-            disques_utilisateur = ''
             msg = message.set_message('initialize_req', [hachage_victime, os_utilisateur, disques_utilisateur])
+            print("Victime a enregistré sur la bd : " + str(msg))
             msg = security.aes_encrypt(msg, cle_aes)
             network.send_message(s_connexion, msg)
             msg = network.receive_message(s_connexion)
             msg = security.aes_decrypt(msg, cle_aes)
+            print("Succes de l'enregistrement en bd")
             msg_type = message.get_message_type(msg)
             if msg_type == 'INITIALIZE_KEY':
                 print("")
