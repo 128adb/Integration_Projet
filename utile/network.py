@@ -15,8 +15,7 @@ def start_net_serv(ip=LOCAL_IP, port=PORT_SERV_CLES):
     :param port: le port à utilier
     :return: le socket créé en mode "serveur"
     """
-    ssocket = socket.socket(socket.AF_INET,
-                                  socket.SOCK_STREAM)  # Serveur socket AF_INET = ipv4, sock_stream = TCP
+    ssocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Serveur socket AF_INET = ipv4, sock_stream = TCP
     # donc le serveur est en TCP et en ipV4
     ssocket.bind((ip, port))  # Le serveur est bind sur comme ip la MIENNE et le port source
     ssocket.listen(5)
@@ -24,9 +23,7 @@ def start_net_serv(ip=LOCAL_IP, port=PORT_SERV_CLES):
     return ssocket
 
 
-
-
-def connect_to_serv(ip=LOCAL_IP, port=PORT_SERV_CLES):
+def connect_to_serv(ip=LOCAL_IP, port=PORT_SERV_CLES, retry=20):
     """
     Crée un socket qui tente de se connecter sur ip:port.
     En cas d'échec, tente une nouvelle connexion après retry secondes
@@ -43,6 +40,7 @@ def connect_to_serv(ip=LOCAL_IP, port=PORT_SERV_CLES):
             connection = True
         except Exception as e:  # Gestion générale des autres erreurs
             print(f"Erreur lors de la connexion: {e}")
+            time.sleep(retry)
     print(f'vous êtes connecté sur {ip} : {port} ')
     return csocket
 
@@ -73,6 +71,3 @@ def receive_message(s):
     len_msg = int(msg[:HEADERSIZE])
     full_msg = pickle.loads(s.recv(len_msg))
     return full_msg
-
-print(socket.gethostname())
-print(socket.gethostbyname(socket.gethostname()))

