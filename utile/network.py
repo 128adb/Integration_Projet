@@ -19,7 +19,7 @@ def start_net_serv(ip=LOCAL_IP, port=PORT_SERV_CLES):
     # donc le serveur est en TCP et en ipV4
     ssocket.bind((ip, port))  # Le serveur est bind sur comme ip la MIENNE et le port source
     ssocket.listen(5)
-    print(f"Serveur en écoute sur {ip}:{port}")
+    print(f"Serveur en écoute sur {ip }:{ port}")
     return ssocket
 
 

