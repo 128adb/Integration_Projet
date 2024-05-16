@@ -10,6 +10,7 @@ from threading import Thread
 load = config.load_config('../configuration/config/serveur_frontal.cfg', '../configuration/config/serveur_frontal.key')
 PORT = 8381
 PORT_RANSOMWARE = 8443
+IP_RANSOMWARE = '192.168.133.18'
 CONFIG_SERVEUR = config.load_config('../configuration/config/serveur.cfg', '../configuration/config/serveur.key')
 CONFIG_WORKSTATION = config.load_config('../configuration/config/workstation.cfg','../configuration/config/workstation.key')
 status_victims = {}

