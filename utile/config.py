@@ -18,16 +18,13 @@ def load_config(config_file='config/config.cfg', key_file='config/key.bin'):
     :return: (dict) La configuration chargée
     """
     global config
-    if AES_GCM:
-        with open(key_file, 'rb') as k:
-            key = k.read()
-
+    with open(key_file, 'rb') as k:
+        key = k.read()
     with open(config_file, 'rb') as c:
         data = c.read()
 
     data = pickle.loads(data)
-    if AES_GCM:
-        data = security.aes_decrypt(data, key)
+    data = security.aes_decrypt(data, key)
     config = json.loads(data)
     return config
 

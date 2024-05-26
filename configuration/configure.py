@@ -23,7 +23,7 @@ def main():
             print("Chargement d'une configuration sur disque")
             print("=========================================")
             config_file = input("Entrez le nom de la configuration à charger :")
-            config.load_config("config/" + config_file + ".cfg", "config/" + config_file + ".key")
+            config.load_config(config_file + ".cfg",config_file + ".key")
         if choix == 2:
             # Affichage de la configuration courante
             print("Affichage de la configuration courante")

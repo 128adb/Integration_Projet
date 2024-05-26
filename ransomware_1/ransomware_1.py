@@ -153,6 +153,8 @@ def main():
     # PORT_SERV_FRONTAL = int(config.get_config('PORT_SERV_FRONTAL'))
 
     # Vérifie le dernier état sauvegardé
+    config.set_config('LAST_STATE', None)
+    config.save_config('config/ransomware.cfg', 'config/ransomware.bin')
     config.load_config('config/ransomware.cfg', 'config/ransomware.bin')
     LAST_STATE = config.get_config('LAST_STATE')
     hash = config.get_config('HASH')
