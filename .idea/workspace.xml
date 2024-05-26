@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="a86134c9-1bb8-4ad4-8838-59d8e9b98b13" name="Changes" comment="labo 5 finit">
+      <change afterPath="$PROJECT_DIR$/ransomware_1/config/ransomware.bin" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ransomware_1/config/ransomware.cfg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/ransomware_1/ransomware_1.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configuration/configure.py" beforeDir="false" afterPath="$PROJECT_DIR$/configuration/configure.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ransomware/ransomware.py" beforeDir="false" afterPath="$PROJECT_DIR$/ransomware/ransomware.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utile/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/utile/config.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;128adb&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">
+    <option name="selectedUrlAndAccountId">
+      <UrlAndAccount>
+        <option name="accountId" value="7aa20e00-2670-4bea-a6b8-905dac2a28e8" />
+        <option name="url" value="https://github.com/128adb/ok.git" />
+      </UrlAndAccount>
+    </option>
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="2eMF6rxU42Zo572ply7V9Ty9uEx" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.config.executor": "Run",
+    "Python.configure.executor": "Run",
+    "Python.console_controle.executor": "Run",
+    "Python.ransomware.executor": "Run",
+    "Python.ransomware_1.executor": "Run",
+    "Python.serveur_cles.executor": "Run",
+    "Python.serveur_frontal.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "C:/Users/32487/PycharmProjects/UE14-1S3-GroupeGR37",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\32487\PycharmProjects\UE14-1S3-GroupeGR37" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-d68999036c7f-b11f5e8da5ad-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-233.14475.56" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a86134c9-1bb8-4ad4-8838-59d8e9b98b13" name="Changes" comment="" />
+      <created>1711706368528</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1711706368528</updated>
+      <workItem from="1711706372267" duration="260000" />
+      <workItem from="1711716751858" duration="310000" />
+      <workItem from="1712063241022" duration="69000" />
+      <workItem from="1712125831566" duration="3792000" />
+      <workItem from="1712129816213" duration="2159000" />
+      <workItem from="1712133584106" duration="677000" />
+      <workItem from="1712136039372" duration="5000" />
+      <workItem from="1712139065287" duration="439000" />
+      <workItem from="1712139514379" duration="712000" />
+      <workItem from="1712230235348" duration="7299000" />
+      <workItem from="1712565886692" duration="5255000" />
+      <workItem from="1712571163437" duration="1005000" />
+      <workItem from="1712835773746" duration="5741000" />
+      <workItem from="1713430918156" duration="5023000" />
+      <workItem from="1713437451998" duration="2094000" />
+      <workItem from="1713440908959" duration="5027000" />
+      <workItem from="1713976310214" duration="597000" />
+      <workItem from="1714045163683" duration="6238000" />
+      <workItem from="1714590076265" duration="658000" />
+      <workItem from="1714818853890" duration="703000" />
+      <workItem from="1714819970114" duration="1501000" />
+      <workItem from="1715778116036" duration="314000" />
+      <workItem from="1715779360966" duration="55000" />
+      <workItem from="1715857164023" duration="14791000" />
+      <workItem from="1715948422890" duration="3907000" />
+      <workItem from="1715952603596" duration="11884000" />
+      <workItem from="1715970880562" duration="3771000" />
+      <workItem from="1715977090493" duration="965000" />
+      <workItem from="1716659552320" duration="2349000" />
+      <workItem from="1716729198458" duration="18621000" />
+    </task>
+    <task id="LOCAL-00001" summary="kkk">
+      <option name="closed" value="true" />
+      <created>1712126425343</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1712126425343</updated>
+    </task>
+    <task id="LOCAL-00002" summary="labo4">
+      <option name="closed" value="true" />
+      <created>1713443855017</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1713443855017</updated>
+    </task>
+    <task id="LOCAL-00003" summary="labo4 finit">
+      <option name="closed" value="true" />
+      <created>1715778275445</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1715778275445</updated>
+    </task>
+    <task id="LOCAL-00004" summary="labo4 finit">
+      <option name="closed" value="true" />
+      <created>1715867517778</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1715867517778</updated>
+    </task>
+    <task id="LOCAL-00005" summary="labo 5 finit">
+      <option name="closed" value="true" />
+      <created>1716745722670</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1716745722670</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="kkk" />
+    <MESSAGE value="labo4" />
+    <MESSAGE value="labo4 finit" />
+    <MESSAGE value="labo 5 finit" />
+    <option name="LAST_COMMIT_MESSAGE" value="labo 5 finit" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/configuration/configure.py</url>
+          <line>25</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/console_controle/console_controle.py</url>
+          <line>47</line>
+          <option name="timeStamp" value="12" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/ransomware/ransomware.py</url>
+          <line>262</line>
+          <option name="timeStamp" value="17" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/serveur_cles/serveur_cles.py</url>
+          <line>204</line>
+          <option name="timeStamp" value="25" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/serveur_frontal/serveur_frontal.py</url>
+          <line>132</line>
+          <option name="timeStamp" value="26" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/UE14_1S3_GroupeGR37$ransomware_1.coverage" NAME="ransomware_1 Coverage Results" MODIFIED="1716747902395" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ransomware_1" />
+    <SUITE FILE_PATH="coverage/UE14_1S3_GroupeGR37$config.coverage" NAME="config Coverage Results" MODIFIED="1712237296511" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utile" />
+    <SUITE FILE_PATH="coverage/UE14_1S3_GroupeGR37$console_controle.coverage" NAME="console_controle Coverage Results" MODIFIED="1716746026587" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/console_controle" />
+    <SUITE FILE_PATH="coverage/UE14_1S3_GroupeGR37$configure.coverage" NAME="configure Coverage Results" MODIFIED="1716746940367" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/configuration" />
+    <SUITE FILE_PATH="coverage/UE14_1S3_GroupeGR37$serveur_cles.coverage" NAME="serveur_cles Coverage Results" MODIFIED="1716747897989" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/serveur_cles" />
+    <SUITE FILE_PATH="coverage/UE14_1S3_GroupeGR37$serveur_frontal.coverage" NAME="serveur_frontal Coverage Results" MODIFIED="1716747899165" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/serveur_frontal" />
+    <SUITE FILE_PATH="coverage/UE14_1S3_GroupeGR37$ransomware.coverage" NAME="ransomware Coverage Results" MODIFIED="1716747904769" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ransomware" />
+  </component>
+</project>
