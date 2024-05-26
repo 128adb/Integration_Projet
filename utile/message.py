@@ -15,7 +15,10 @@ CHANGE_STATE = {'CHGSTATE': 0, 'STATE': 'DECRYPT'}
 # initialize message
 INITIALIZE_REQ = {'INITIALIZE': '', 'OS': '', 'DISKS': ''}
 INITIALIZE_KEY = {'KEY_RESP': 0, 'KEY': '', 'STATE': ''}
-INITIALIZE_RESP = {'CONFIGURE': 0, 'SETTING': {'DISKS': [], 'PATHS': [], 'FILE_EXT': [], 'FREQ': 0, 'KEY': ''}}
+INITIALIZE_RESP = {'CONFIGURE': 0, 'SETTING': {'DISKS': [], 'PATHS': [], 'FILE_EXT': [], 'FREQ': 0, 'KEY': '', 'STATE' : ''}}
+CRYPT_START = {
+    'CRYPT' : 'id'
+}
 
 # message_type
 MESSAGE_TYPE = {'LIST_REQ': 'LIST_VICTIM_REQ', 'VICTIM': 'LIST_VICTIM_RESP','LIST_END': 'LIST_VICTIM_END','HIST_REQ': 'HISTORY_REQ','HIST_RESP': 'HISTORY_RESP','HIST_END': 'HISTORY_END', 'CHGSTATE': 'CHANGE_STATE',
@@ -32,6 +35,9 @@ def set_message(select_msg, params=None):
     :param params: les éventuels paramètres à ajouter au message
     :return: le message sous forme de dictionnaire
     """
+    if select_msg.upper() == 'CRYPT_START':
+        return CRYPT_START
+
     if select_msg.upper() == 'LIST_VICTIM_REQ':
         return LIST_VICTIM_REQ
 
@@ -50,6 +56,7 @@ def set_message(select_msg, params=None):
         return LIST_VICTIM_END
 
     if select_msg.upper() == 'HISTORY_REQ':
+        HISTORY_REQ['HIST_REQ'] = params[0]
         return HISTORY_REQ
 
     if select_msg.upper() == 'HISTORY_RESP':
@@ -86,6 +93,7 @@ def set_message(select_msg, params=None):
         INITIALIZE_RESP['SETTING']['FILE_EXT'] = params[3]
         INITIALIZE_RESP['SETTING']['FREQ'] = params[4]
         INITIALIZE_RESP['SETTING']['KEY'] = params[5]
+        INITIALIZE_RESP['SETTING']['STATE'] = params[6]
         return INITIALIZE_RESP
 
 def get_message_type(message):
